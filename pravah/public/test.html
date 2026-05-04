@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pravah SDK Test</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        #status-bar { padding: 10px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; }
+        .connected { background: #d4edda; color: #155724; }
+        .disconnected { background: #f8d7da; color: #721c24; }
+        #log-container { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 4px; height: 400px; overflow-y: auto; font-family: 'Courier New', Courier, monospace; }
+        .log-entry { margin-bottom: 8px; border-bottom: 1px solid #34495e; padding-bottom: 4px; }
+        .timestamp { color: #f1c40f; margin-right: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Pravah SDK Testing</h1>
+    
+    <div id="status-bar" class="disconnected">
+        Status: Disconnected
+    </div>
+
+    <div id="log-container">
+        <div class="log-entry">Waiting for SDK initialization...</div>
+    </div>
+</div>
+
+<!-- Load SDK -->
+<script src="/js/pravah-sdk.js"></script>
+
+<script>
+    const logContainer = document.getElementById('log-container');
+    const statusBar = document.getElementById('status-bar');
+
+    function log(message, data = null) {
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        const now = new Date().toLocaleTimeString();
+        
+        let logText = `<span class="timestamp">[${now}]</span> ${message}`;
+        if (data) {
+            logText += `<br><pre style="margin-left: 20px; font-size: 0.9em;">${JSON.stringify(data, null, 2)}</pre>`;
+        }
+        
+        entry.innerHTML = logText;
+        logContainer.prepend(entry);
+    }
+
+    // Initialize Pravah
+    const pravah = new Pravah({
+        streams: ['test-stream', 'project:123']
+    });
+
+    log('SDK Instance created. Starting handshake...');
+
+    // Listen for connection event
+    pravah.on('connected', (data) => {
+        log('<b>EVENT: connected</b>', data);
+        statusBar.textContent = 'Status: Connected';
+        statusBar.className = 'status-bar connected';
+    });
+
+    // Listen for disconnection event
+    pravah.on('disconnected', (data) => {
+        log('<b>EVENT: disconnected</b>', data);
+        statusBar.textContent = 'Status: Disconnected (Reconnecting...)';
+        statusBar.className = 'status-bar disconnected';
+    });
+
+    // Listen for heartbeats
+    pravah.on('heartbeat', (data) => {
+        log('Heartbeat received', { timestamp: data });
+    });
+
+    // Generic listener for testing any future events
+    pravah.on('bid-updated', (data) => {
+        log('<b>SIGNAL: bid-updated</b>', data);
+    });
+</script>
+
+</body>
+</html>

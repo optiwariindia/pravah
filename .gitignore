@@ -1,0 +1,8 @@
+/db
+/tasks
+.codex
+GEMINI.md
+roadmap.md
+docs/uml
+node_modules
+dist

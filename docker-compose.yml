@@ -1,0 +1,29 @@
+services:
+  pravah:
+    image: optiwariindia/pravah:0.0.1
+    build:
+      target: development
+      context: ./pravah
+    restart: unless-stopped
+    environment:
+      - PORT=3000
+      - MONGODB=mongodb://db/pravah
+    volumes:
+      - ./pravah:/pravah
+      - /pravah/node_modules
+  pravah-go:
+    image: optiwariindia/pravah-go:1.0.0
+    build:
+      context: ./pravah-go
+    restart: unless-stopped
+    environment:
+      - PORT=3000
+      - MONGODB=mongodb://db/pravah
+    depends_on:
+      - db
+
+  db:
+    image: mongo:latest
+    restart: unless-stopped
+    volumes:
+      - ./db:/data/db

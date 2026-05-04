@@ -1,0 +1,31 @@
+{
+  "name": "pravah",
+  "version": "1.0.0",
+  "description": "A project to generate and communicate server sent events using expressjs based microservice",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "Server Sent Events",
+    "Real time communication",
+    "microservice"
+  ],
+  "port":3000,
+  "author": "Om Prakash Tiwari<optiwari.india@gmail.com>",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "express-pureip": "^1.1.0",
+    "mongoose": "^9.6.1",
+    "twig": "^3.0.0",
+    "uuid": "^14.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
