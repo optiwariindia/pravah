@@ -37,7 +37,8 @@ The SDK automatically handles the identity handshake and tab synchronization.
 ```javascript
 const pravah = new Pravah({
     baseUrl: 'https://pravah-service.com',
-    streams: ['project:123', 'user:456'] // Subscribed streams
+    streams: ['project:123', 'user:456'], // Subscribed streams
+    logLevel: 'info' // Optional: 'none' (default), 'error', 'warn', 'info'
 });
 ```
 

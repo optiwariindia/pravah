@@ -1,6 +1,7 @@
 package core
 
 import (
+	"encoding/json"
 	"sync"
 	"time"
 )
@@ -73,6 +74,27 @@ func (cm *ClientManager) GetConnectionCount() int {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()
 	return len(cm.clients)
+}
+
+func (cm *ClientManager) Broadcast(event string, data interface{}) {
+	cm.mu.RLock()
+	defer cm.mu.RUnlock()
+
+	payload := map[string]interface{}{
+		"event": event,
+		"data":  data,
+	}
+
+	jsonPayload, _ := json.Marshal(payload)
+	msg := string(jsonPayload)
+
+	for _, client := range cm.clients {
+		select {
+		case client.Signal <- msg:
+		default:
+			// Drop message if buffer is full to prevent blocking
+		}
+	}
 }
 
 func (cm *ClientManager) GetAllClients() []map[string]interface{} {

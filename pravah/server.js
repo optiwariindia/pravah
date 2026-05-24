@@ -6,17 +6,20 @@ import expressPureIP from "express-pureip";
 import mongoose from "mongoose";
 import { v4 as uuid } from "uuid";
 
-import { checkEnvironmentVariables } from "./utils/index.js";
-import handshakeRouter from "./core/handshake.js";
-import subscribeRouter from "./modules/subscribe/route.js";
-import publishRouter from "./modules/publish/route.js";
-import healthRouter from "./modules/health/route.js";
-import appRouter from "./modules/app/route.js";
+import clientManager from "./core/clientManager.js";
 
 (async () => {
     await checkEnvironmentVariables();
     await mongoose.connect(process.env.MONGODB)
     const app = express();
+
+    // Setup periodic broadcast for timestamp (every 1 second)
+    setInterval(() => {
+        clientManager.broadcast("timestamp", {
+            server_time: new Date().toISOString()
+        });
+    }, 1000);
+
     app
         .set("view-engine", "twig")
         .use(express.static("public"))

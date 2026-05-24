@@ -3,10 +3,19 @@
  * Managed real-time event streaming with Multi-Tab Synchronization.
  * Version: 1.0.1 (Generic Signal Support)
  */
+
+const LOG_LEVELS = {
+    none: 0,
+    error: 1,
+    warn: 2,
+    info: 3
+};
+
 export default class Pravah {
     constructor(options = {}) {
         this.baseUrl = options.baseUrl || ''; // Pravah service URL
         this.streams = options.streams || ['global'];
+        this.logLevel = options.logLevel || 'none';
         this.id = null;
         this.eventSource = null;
         this.listeners = {};
@@ -19,6 +28,16 @@ export default class Pravah {
     }
 
     /**
+     * Internal: Logger helper
+     */
+    _log(level, ...args) {
+        if (LOG_LEVELS[this.logLevel] >= LOG_LEVELS[level]) {
+            const method = level === 'info' ? 'log' : level;
+            console[method](...args);
+        }
+    }
+
+    /**
      * Initialization: Handshake -> Leader Election -> Connection
      */
     async init() {
@@ -28,7 +47,7 @@ export default class Pravah {
             const data = await response.json();
             
             if (data.success) {
-                console.log('[Pravah SDK] Handshake successful:', data.message);
+                this._log('info','[Pravah SDK] Handshake successful:', data.message);
                 this.id = data.pravah_id;
                 
                 // 2. Setup tab synchronization
@@ -38,7 +57,7 @@ export default class Pravah {
                 this.manageConnection();
             }
         } catch (error) {
-            console.error('[Pravah SDK] Initialization failed:', error);
+            this._log('error','[Pravah SDK] Initialization failed:', error);
         }
     }
 
@@ -84,7 +103,7 @@ export default class Pravah {
     }
 
     becomeLeader() {
-        console.log('[Pravah SDK] Connection active in this tab (Leader).');
+        this._log('info','[Pravah SDK] Connection active in this tab (Leader).');
         this.isLeader = true;
         this.connectSSE();
     }
@@ -121,16 +140,16 @@ export default class Pravah {
                     this.emit(event, data);
                 }
             } catch (err) {
-                console.warn('[Pravah SDK] Received non-JSON message:', e.data);
+                this._log('warn','[Pravah SDK] Received non-JSON message:', e.data);
             }
         };
 
         this.eventSource.addEventListener('connected', (e) => {
-            console.log('[Pravah SDK] SSE Stream connected.');
+            this._log('info','[Pravah SDK] SSE Stream connected.');
         });
 
         this.eventSource.onerror = (err) => {
-            console.error('[Pravah SDK] SSE Error. Reconnecting in 5s...');
+            this._log('error','[Pravah SDK] SSE Error. Reconnecting in 5s...');
             this.emit('disconnected', { timestamp: new Date().toISOString() });
             this.closeEventSource();
             setTimeout(() => this.connectSSE(), 5000);
@@ -151,7 +170,7 @@ export default class Pravah {
     on(event, callback) {
         if (!this.listeners[event]) this.listeners[event] = [];
         this.listeners[event].push(callback);
-        console.log(`[Pravah SDK] Listener registered for: ${event}`);
+        this._log('info',`[Pravah SDK] Listener registered for: ${event}`);
     }
 
     /**
@@ -160,7 +179,7 @@ export default class Pravah {
     off(event, callback) {
         if (!this.listeners[event]) return;
         this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
-        console.log(`[Pravah SDK] Listener removed for: ${event}`);
+        this._log('info',`[Pravah SDK] Listener removed for: ${event}`);
     }
 
     /**

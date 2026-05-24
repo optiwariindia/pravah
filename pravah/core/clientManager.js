@@ -55,6 +55,22 @@ class ClientManager {
     }
 
     /**
+     * Broadcast an event to all connected clients
+     * @param {string} event - Event name
+     * @param {Object} data - Data payload
+     */
+    broadcast(event, data) {
+        const payload = JSON.stringify({ event, data });
+        for (const client of this.clients.values()) {
+            try {
+                client.res.write(`data: ${payload}\n\n`);
+            } catch (err) {
+                // Silently handle broken connections, they will be removed by the subscribe handler's close event
+            }
+        }
+    }
+
+    /**
      * Get total active connection count
      * @returns {number}
      */

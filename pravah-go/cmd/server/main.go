@@ -9,6 +9,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/sampledge-sse/pravah-go/internal/api"
+	"github.com/sampledge-sse/pravah-go/internal/core"
 	"github.com/sampledge-sse/pravah-go/internal/db"
 	"github.com/sampledge-sse/pravah-go/internal/middleware"
 	"github.com/sampledge-sse/pravah-go/internal/utils"
@@ -65,6 +66,20 @@ func main() {
 	{
 		apiV1.PUT("/register", api.RegisterAppHandler)
 	}
+
+	// Start background broadcast for timestamp
+	go func() {
+		ticker := time.NewTicker(1 * time.Second)
+		cm := core.GetClientManager()
+		for {
+			select {
+			case t := <-ticker.C:
+				cm.Broadcast("timestamp", map[string]interface{}{
+					"server_time": t.Format(time.RFC3339),
+				})
+			}
+		}
+	}()
 
 	log.Printf("Server started on port %s", port)
 	if err := r.Run(":" + port); err != nil {

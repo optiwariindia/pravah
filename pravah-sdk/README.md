@@ -15,7 +15,8 @@ import Pravah from 'pravah-sdk';
 
 const pravah = new Pravah({
   baseUrl: 'https://your-pravah-instance.com',
-  streams: ['global']
+  streams: ['global'],
+  logLevel: 'info' // Optional: 'none' (default), 'error', 'warn', 'info'
 });
 
 pravah.on('bid-updated', (data) => {
@@ -53,7 +54,7 @@ const MyComponent = () => {
 ## API Reference
 
 ### Core Class: `Pravah`
-- `constructor(options)`: `{ baseUrl: string, streams: string[] }`
+- `constructor(options)`: `{ baseUrl: string, streams: string[], logLevel?: 'none' | 'error' | 'warn' | 'info' }`
 - `on(event, callback)`: Subscribe to an event.
 - `off(event, callback)`: Unsubscribe from an event.
 
