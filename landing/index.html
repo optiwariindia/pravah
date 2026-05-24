@@ -183,13 +183,48 @@
     <section id="get-started" class="section">
         <div class="section-title">
             <h2>Quick Start</h2>
-            <p>Deploy in seconds with Docker.</p>
+            <p>Launch BizBandhan instantly using Docker. No source code required.</p>
         </div>
-        <pre><code># Spin up the Pravah stack
-git clone https://github.com/optiwariindia/pravah
-cd pravah
-docker-compose up -d</code></pre>
-        <p style="text-align: center; margin-top: 20px; color: var(--text-dim);">The service is now running on <code>localhost:3000</code>.</p>
+
+        <div class="tabs">
+            <button class="tab-link active" onclick="openTab(event, 'docker-cli')">Docker CLI</button>
+            <button class="tab-link" onclick="openTab(event, 'docker-compose')">Docker Compose</button>
+        </div>
+
+        <div id="docker-cli" class="tab-content active">
+            <p style="color: var(--text-dim); text-align: center;">Run the high-performance Go engine directly:</p>
+            <pre><code>docker run -d -p 3000:3000 --name bizbandhan \
+  -e MONGODB=mongodb://your-mongo-ip/pravah \
+  optiwariindia/pravah-go:1.0.0</code></pre>
+        </div>
+
+        <div id="docker-compose" class="tab-content">
+            <p style="color: var(--text-dim); text-align: center;">Create a <code>docker-compose.yml</code> and run <code>docker-compose up -d</code>:</p>
+            <pre><code>services:
+  bizbandhan:
+    image: optiwariindia/pravah-go:1.0.0
+    restart: unless-stopped
+    ports:
+      - "3000:3000" # Publish port for external access
+    environment:
+      - PORT=3000
+      - MONGODB=mongodb://db/pravah
+    depends_on:
+      - db
+
+  db:
+    image: mongo:latest
+    restart: unless-stopped
+    volumes:
+      - ./db-data:/data/db</code></pre>
+        </div>
+
+        <div style="background: rgba(45, 212, 191, 0.1); border-left: 4px solid var(--accent); padding: 20px; margin-top: 30px; border-radius: 8px;">
+            <p style="margin: 0; font-size: 0.95rem;">
+                <strong>💡 Pro Tip: Port Publishing</strong><br>
+                By default, our images use port <code>3000</code>. If you are deploying behind a reverse proxy (like Nginx), you can skip port publishing and use internal Docker networking. For direct access, use <code>-p 3000:3000</code>.
+            </p>
+        </div>
     </section>
 
     <section class="section">
