@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sampledge-sse/pravah-go/internal/db"
-	"github.com/sampledge-sse/pravah-go/internal/models"
+	"github.com/optiwariindia/pravah/pravah-go/internal/db"
+	"github.com/optiwariindia/pravah/pravah-go/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
 )
 

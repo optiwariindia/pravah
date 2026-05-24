@@ -3,78 +3,245 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pravah | Real-time Flow, Simplified.</title>
+    <title>Pravah | Real-time Event Streaming with Multi-Tab Efficiency</title>
     <style>
         :root {
-            --primary: #3498db;
-            --secondary: #2c3e50;
-            --accent: #e74c3c;
-            --bg: #f8f9fa;
-            --text: #333;
-            --code-bg: #1e1e1e;
+            --primary: #00d2ff;
+            --primary-dark: #3a7bd5;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f1f5f9;
+            --text-dim: #94a3b8;
+            --accent: #2dd4bf;
+            --code-bg: #000000;
         }
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; line-height: 1.6; color: var(--text); margin: 0; background: var(--bg); }
-        header { background: linear-gradient(135deg, var(--secondary), #1a252f); color: white; padding: 100px 20px; text-align: center; }
-        .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
-        h1 { font-size: 3.5rem; margin-bottom: 10px; }
-        .tagline { font-size: 1.5rem; opacity: 0.9; margin-bottom: 30px; }
-        .btn { display: inline-block; padding: 12px 30px; border-radius: 5px; text-decoration: none; font-weight: bold; transition: 0.3s; }
-        .btn-primary { background: var(--primary); color: white; }
-        .section { margin-bottom: 80px; }
-        h2 { border-bottom: 3px solid var(--primary); display: inline-block; padding-bottom: 5px; margin-bottom: 30px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
-        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        pre { background: var(--code-bg); color: #dcdcdc; padding: 20px; border-radius: 5px; overflow-x: auto; font-size: 0.9rem; }
-        .tabs { display: flex; border-bottom: 1px solid #ddd; margin-bottom: 20px; }
-        .tab-link { padding: 10px 20px; cursor: pointer; border: none; background: none; font-weight: bold; color: #666; }
-        .tab-link.active { border-bottom: 3px solid var(--primary); color: var(--primary); }
+
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+            line-height: 1.6; 
+            color: var(--text-main); 
+            margin: 0; 
+            background: var(--bg-dark);
+            scroll-behavior: smooth;
+        }
+
+        /* Hero Section */
+        header { 
+            background: radial-gradient(circle at top right, #1e293b, #0f172a);
+            padding: 120px 20px; 
+            text-align: center; 
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-waves {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%231e293b" fill-opacity="1" d="M0,192L48,197.3C96,203,192,213,288,192C384,171,480,117,576,112C672,107,768,149,864,160C960,171,1056,149,1152,128C1248,107,1344,85,1392,74.7L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+        }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        
+        h1 { font-size: 4.5rem; margin: 0; font-weight: 800; background: linear-gradient(to right, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .tagline { font-size: 1.4rem; color: var(--text-dim); margin: 20px auto 40px; max-width: 700px; }
+
+        .btn { 
+            display: inline-block; 
+            padding: 14px 36px; 
+            border-radius: 50px; 
+            text-decoration: none; 
+            font-weight: 700; 
+            transition: 0.3s; 
+            font-size: 1.1rem;
+        }
+        .btn-primary { 
+            background: linear-gradient(to right, var(--primary), var(--primary-dark)); 
+            color: white;
+            box-shadow: 0 10px 20px rgba(58, 123, 213, 0.3);
+        }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(58, 123, 213, 0.4); }
+
+        /* Features Section */
+        .section { padding: 100px 0; }
+        .section-title { text-align: center; margin-bottom: 60px; }
+        .section-title h2 { font-size: 2.5rem; margin-bottom: 10px; }
+        .section-title p { color: var(--text-dim); font-size: 1.1rem; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; }
+        .card { 
+            background: var(--bg-card); 
+            padding: 40px; 
+            border-radius: 16px; 
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: 0.3s;
+        }
+        .card:hover { border-color: var(--primary); transform: translateY(-5px); }
+        .card h3 { font-size: 1.5rem; margin-top: 0; color: var(--primary); }
+        .card p { color: var(--text-dim); }
+
+        /* Visualization */
+        .visualizer {
+            background: var(--code-bg);
+            border-radius: 16px;
+            padding: 40px;
+            margin: 40px 0;
+            position: relative;
+            border: 1px solid #333;
+            overflow: hidden;
+        }
+        .signal-dot {
+            width: 12px;
+            height: 12px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: absolute;
+            left: 0;
+            top: 50%;
+            filter: blur(2px);
+            box-shadow: 0 0 10px var(--accent);
+            animation: flow 4s infinite linear;
+        }
+        @keyframes flow {
+            0% { left: 0; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { left: 100%; opacity: 0; }
+        }
+
+        /* Code Blocks */
+        pre { background: var(--code-bg); color: #dcdcdc; padding: 25px; border-radius: 12px; overflow-x: auto; font-family: 'Fira Code', monospace; border: 1px solid #222; position: relative; }
+        pre::before { content: 'Terminal'; position: absolute; top: 0; right: 20px; font-size: 0.7rem; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        .tab-link { padding: 10px 25px; border-radius: 30px; cursor: pointer; border: 1px solid #333; background: transparent; color: var(--text-dim); font-weight: 600; transition: 0.2s; }
+        .tab-link.active { background: var(--primary); color: white; border-color: var(--primary); }
         .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        footer { text-align: center; padding: 40px; background: #eee; font-size: 0.9rem; }
-        code { color: var(--accent); font-weight: bold; }
+        .tab-content.active { display: block; animation: fadeIn 0.5s; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        footer { text-align: center; padding: 80px 20px; background: #050a15; border-top: 1px solid #111; }
+        footer p { color: var(--text-dim); font-size: 0.95rem; }
+        .lead-eng { color: var(--accent); font-weight: 600; }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.8rem; }
+            .section { padding: 60px 0; }
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>🌊 Pravah</h1>
-    <p class="tagline">High-Performance, Secure Real-time Event Streaming Engine.</p>
-    <a href="#get-started" class="btn btn-primary">Get Started Now</a>
+    <div class="container">
+        <h1>🌊 Pravah</h1>
+        <p class="tagline">High-Performance, Secure, and Multi-Tab Efficient Real-time Event Streaming Engine for Modern Web Apps.</p>
+        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <a href="#get-started" class="btn btn-primary">Get Started</a>
+            <a href="https://github.com/optiwariindia" class="btn" style="border: 1px solid #333; color: white;">View on GitHub</a>
+        </div>
+    </div>
+    <div class="hero-waves"></div>
 </header>
 
 <div class="container">
     <section class="section">
-        <h2>The Problem</h2>
+        <div class="section-title">
+            <h2>Why Pravah?</h2>
+            <p>Designed to solve the biggest pain points of standard SSE and WebSockets.</p>
+        </div>
         <div class="grid">
             <div class="card">
-                <h3>Server Overload</h3>
-                <p>Most real-time solutions open a separate connection for every browser tab. 10 tabs = 10x server load. Pravah fixes this with <strong>Leader Election</strong>, ensuring only one connection per browser.</p>
+                <h3>Tab Synchronization</h3>
+                <p>Standard SSE opens a connection for every tab. Pravah uses <strong>Leader Election</strong> via BroadcastChannel to ensure only one connection exists across all tabs, reducing server load by up to 90%.</p>
             </div>
             <div class="card">
-                <h3>Data Leaks</h3>
-                <p>Sending sensitive data over web-sockets or SSE is risky. Pravah uses a <strong>Signal-Only Policy</strong>—sending only IDs, forcing clients to use authorized REST APIs for actual data.</p>
+                <h3>Signal-Only Security</h3>
+                <p>Never leak sensitive data. Pravah enforces a <strong>Signal-Only</strong> policy—sending only event names and resource IDs. The client then fetches data via your secure, authenticated REST APIs.</p>
+            </div>
+            <div class="card">
+                <h3>Dual-Core Engine</h3>
+                <p>Choose your flavor. A lightweight <strong>Node.js</strong> implementation for rapid prototyping, or a high-concurrency <strong>Go</strong> engine for massive scale.</p>
             </div>
         </div>
     </section>
 
+    <div class="visualizer">
+        <div class="signal-dot" style="top: 30%; animation-delay: 0s;"></div>
+        <div class="signal-dot" style="top: 50%; animation-delay: 1.5s;"></div>
+        <div class="signal-dot" style="top: 70%; animation-delay: 3s;"></div>
+        <div style="text-align: center; color: #444; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 4px;">Real-time Signal Flow</div>
+    </div>
+
     <section id="get-started" class="section">
-        <h2>Getting Started</h2>
-        <p>You can self-host Pravah using Docker in seconds. It runs on a high-performance <strong>Go Engine</strong> with a minimal footprint.</p>
-        <pre><code># Clone and run
-git clone https://github.com/sampledge-sse/pravah
+        <div class="section-title">
+            <h2>Quick Start</h2>
+            <p>Deploy in seconds with Docker.</p>
+        </div>
+        <pre><code># Spin up the Pravah stack
+git clone https://github.com/optiwariindia/pravah
 cd pravah
 docker-compose up -d</code></pre>
+        <p style="text-align: center; margin-top: 20px; color: var(--text-dim);">The service is now running on <code>localhost:3000</code>.</p>
     </section>
 
     <section class="section">
-        <h2>Proxying /pravah</h2>
-        <p>To avoid CORS issues and simplify frontend integration, you should proxy the <code>/pravah</code> endpoint from your main domain.</p>
+        <div class="section-title">
+            <h2>Unified SDK</h2>
+            <p>A single SDK for Vanilla JS and React with built-in Leader Election.</p>
+        </div>
+        <div class="tabs">
+            <button class="tab-link active" onclick="openTab(event, 'sdk-vanilla')">Vanilla JS</button>
+            <button class="tab-link" onclick="openTab(event, 'sdk-react')">React Hooks</button>
+        </div>
+
+        <div id="sdk-vanilla" class="tab-content active">
+            <pre><code>import Pravah from 'pravah-sdk';
+
+const pravah = new Pravah({
+  baseUrl: '/pravah',
+  streams: ['global']
+});
+
+pravah.on('bid-updated', (signal) => {
+  console.log('Update received for ID:', signal.id);
+});</code></pre>
+        </div>
+
+        <div id="sdk-react" class="tab-content">
+            <pre><code>import { PravahProvider, usePravahListener } from 'pravah-sdk';
+
+// Wrap your app once
+<PravahProvider options={{ baseUrl: '/pravah' }}>
+  <App />
+</PravahProvider>
+
+// Use anywhere
+const MyComponent = () => {
+  usePravahListener(null, 'order-placed', (signal) => {
+    alert(`New order: ${signal.id}`);
+  });
+  return &lt;div&gt;Dashboard&lt;/div&gt;;
+};</code></pre>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-title">
+            <h2>Proxy Configuration</h2>
+            <p>Optimized for SSE with zero-buffering.</p>
+        </div>
         
         <div class="tabs">
             <button class="tab-link active" onclick="openTab(event, 'nginx')">Nginx</button>
             <button class="tab-link" onclick="openTab(event, 'caddy')">Caddy</button>
-            <button class="tab-link" onclick="openTab(event, 'apache')">Apache</button>
-            <button class="tab-link" onclick="openTab(event, 'iis')">IIS</button>
         </div>
 
         <div id="nginx" class="tab-content active">
@@ -85,57 +252,25 @@ docker-compose up -d</code></pre>
     chunked_transfer_encoding off;
     proxy_buffering off;
     proxy_cache off;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
 }</code></pre>
         </div>
 
         <div id="caddy" class="tab-content">
             <pre><code>yourdomain.com {
     reverse_proxy /pravah/* localhost:3000 {
-        header_up Host {host}
-        header_up X-Real-IP {remote}
-        # SSE optimization
         flush_interval -1
     }
 }</code></pre>
         </div>
-
-        <div id="apache" class="tab-content">
-            <pre><code>&lt;Location "/pravah"&gt;
-    ProxyPass "http://localhost:3000/pravah"
-    ProxyPassReverse "http://localhost:3000/pravah"
-    SetEnv force-proxy-request-1.0 1
-    SetEnv proxy-nokeepalive 1
-    # Disable buffering for SSE
-    RequestHeader set Connection ""
-&lt;/Location&gt;</code></pre>
-        </div>
-
-        <div id="iis" class="tab-content">
-            <p>1. Install **Application Request Routing (ARR)** and **URL Rewrite**.</p>
-            <p>2. Create a Reverse Proxy rule pointing <code>/pravah</code> to <code>http://localhost:3000/pravah</code>.</p>
-            <p>3. Ensure **Response Buffering** is disabled in your web.config:</p>
-            <pre><code>&lt;system.webServer&gt;
-    &lt;urlCompression doStaticCompression="false" doDynamicCompression="false" /&gt;
-&lt;/system.webServer&gt;</code></pre>
-        </div>
-    </section>
-
-    <section class="section">
-        <h2>Why Go?</h2>
-        <p>The core engine is built with <strong>Go 1.25</strong> and packaged as a <code>scratch</code> image. This means:</p>
-        <ul>
-            <li><strong>Tiny Footprint:</strong> Image size is less than 20MB.</li>
-            <li><strong>Hardened Security:</strong> No OS, no shell, no vulnerabilities.</li>
-            <li><strong>High Concurrency:</strong> Handles thousands of streams using Go Routines efficiently.</li>
-        </ul>
     </section>
 </div>
 
 <footer>
-    <p>Pravah &copy; 2026. Lead Engineer: Sanket.</p>
-    <p>Built for the open-source community. Refine. Scale. Flow.</p>
+    <div class="container">
+        <p>Pravah is Open Source (ISC) &bull; Built for scale and simplicity.</p>
+        <p>Lead Engineer: <span class="lead-eng">Om Prakash Tiwari</span></p>
+        <p style="opacity: 0.5; font-size: 0.8rem; margin-top: 20px;">&copy; 2026 BizBandhan SSE Systems.</p>
+    </div>
 </footer>
 
 <script>

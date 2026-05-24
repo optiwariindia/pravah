@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sampledge-sse/pravah-go/internal/core"
-	"github.com/sampledge-sse/pravah-go/internal/db"
-	"github.com/sampledge-sse/pravah-go/internal/models"
+	"github.com/optiwariindia/pravah/pravah-go/internal/core"
+	"github.com/optiwariindia/pravah/pravah-go/internal/db"
+	"github.com/optiwariindia/pravah/pravah-go/internal/models"
 )
 
 type PublishRequest struct {

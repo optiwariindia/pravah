@@ -11,7 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/sampledge-sse/pravah-go/internal/core"
+	"github.com/optiwariindia/pravah/pravah-go/internal/core"
 )
 
 func SubscribeHandler(c *gin.Context) {

@@ -51,6 +51,31 @@ const MyComponent = () => {
 };
 ```
 
+## React Context Provider
+
+You can wrap your application with `PravahProvider` to avoid passing the `pravah` instance to every hook.
+
+```javascript
+import { PravahProvider, usePravahListener } from 'pravah-sdk';
+
+const options = { baseUrl: 'https://your-pravah-service.com' };
+
+const Root = () => (
+  <PravahProvider options={options}>
+    <MyComponent />
+  </PravahProvider>
+);
+
+const MyComponent = () => {
+  // Automatically uses the Pravah instance from context
+  usePravahListener(null, 'event-name', (data) => {
+    console.log(data);
+  });
+  
+  return <div>My Component</div>;
+};
+```
+
 ## API Reference
 
 ### Core Class: `Pravah`
@@ -59,9 +84,11 @@ const MyComponent = () => {
 - `off(event, callback)`: Unsubscribe from an event.
 
 ### React Hooks
+- `PravahProvider`: Context provider. Props: `{ options: PravahOptions, children: ReactNode }`.
 - `usePravah(options)`: Initializes and manages a Pravah instance.
-- `usePravahListener(pravah, event, callback)`: Subscribes to an event within a component.
-- `usePravahState(pravah, event)`: Returns the latest data for an event.
+- `usePravahContext()`: Access the Pravah instance from the provider.
+- `usePravahListener(pravah, event, callback)`: Subscribes to an event within a component. `pravah` is optional if inside `PravahProvider`.
+- `usePravahState(pravah, event)`: Returns the latest data for an event. `pravah` is optional if inside `PravahProvider`.
 
 ## License
 ISC

@@ -8,8 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/sampledge-sse/pravah-go/internal/db"
-	"github.com/sampledge-sse/pravah-go/internal/models"
+	"github.com/optiwariindia/pravah/pravah-go/internal/db"
+	"github.com/optiwariindia/pravah/pravah-go/internal/models"
 )
 
 type RegisterRequest struct {

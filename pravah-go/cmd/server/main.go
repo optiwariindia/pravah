@@ -8,11 +8,11 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/sampledge-sse/pravah-go/internal/api"
-	"github.com/sampledge-sse/pravah-go/internal/core"
-	"github.com/sampledge-sse/pravah-go/internal/db"
-	"github.com/sampledge-sse/pravah-go/internal/middleware"
-	"github.com/sampledge-sse/pravah-go/internal/utils"
+	"github.com/optiwariindia/pravah/pravah-go/internal/api"
+	"github.com/optiwariindia/pravah/pravah-go/internal/core"
+	"github.com/optiwariindia/pravah/pravah-go/internal/db"
+	"github.com/optiwariindia/pravah/pravah-go/internal/middleware"
+	"github.com/optiwariindia/pravah/pravah-go/internal/utils"
 )
 
 func main() {

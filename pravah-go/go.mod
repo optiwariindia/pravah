@@ -1,4 +1,4 @@
-module github.com/sampledge-sse/pravah-go
+module github.com/optiwariindia/pravah/pravah-go
 
 go 1.25.0
 
