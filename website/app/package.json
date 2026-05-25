@@ -1,0 +1,20 @@
+{
+  "name": "bizbandhan-pravah-portal",
+  "version": "1.0.0",
+  "description": "Consumer Portal for BizBandhan Pravah",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "twig": "^1.17.1",
+    "mongoose": "^8.0.0",
+    "express-web-tools": "latest"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

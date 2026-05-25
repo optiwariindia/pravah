@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import { v4 as uuid } from "uuid";
 
 import clientManager from "./core/clientManager.js";
+import {checkEnvironmentVariables} from "./utils/index.js";
 
 (async () => {
     await checkEnvironmentVariables();

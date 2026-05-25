@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BizBandhan Pravah | Real-time Event Streaming{% endblock %}</title>
+    <link rel="stylesheet" href="/css/style.css">
+    {% block head %}{% endblock %}
+</head>
+<body>
+
+<header>
+    <div class="container">
+        <h1>🌊 BizBandhan Pravah</h1>
+        <p class="tagline">High-Performance, Secure, and Multi-Tab Efficient Real-time Event Streaming Engine for Modern Web Apps.</p>
+        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <a href="/#get-started" class="btn btn-primary">Get Started</a>
+            <a href="https://github.com/optiwariindia/pravah" class="btn" style="border: 1px solid #333; color: white;">View on GitHub</a>
+            <a href="/pricing" class="btn" style="border: 1px solid #333; color: white;">Pricing</a>
+        </div>
+    </div>
+    <div class="hero-waves"></div>
+</header>
+
+<div class="container">
+    {% block content %}{% endblock %}
+</div>
+
+<footer>
+    <div class="container">
+        <p>BizBandhan Pravah is Open Source (ISC) &bull; Built for scale and simplicity.</p>
+        <p>Lead Engineer: <span class="lead-eng">Om Prakash Tiwari</span></p>
+        <div style="margin-top: 15px;">
+            <a href="/privacy-policy" style="color: var(--text-dim); text-decoration: none; margin: 0 10px;">Privacy Policy</a>
+            <a href="/terms-of-service" style="color: var(--text-dim); text-decoration: none; margin: 0 10px;">Terms of Service</a>
+        </div>
+        <p style="opacity: 0.5; font-size: 0.8rem; margin-top: 20px;">&copy; 2026 BizBandhan SSE Systems.</p>
+    </div>
+</footer>
+
+<script>
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tab-link");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+</script>
+{% block scripts %}{% endblock %}
+
+</body>
+</html>

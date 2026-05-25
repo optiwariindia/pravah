@@ -1,0 +1,150 @@
+{% extends 'layouts/main.twig' %}
+
+{% block content %}
+    <section class="section">
+        <div class="section-title">
+            <h2>Why BizBandhan Pravah?</h2>
+            <p>Designed to solve the biggest pain points of standard SSE and WebSockets.</p>
+        </div>
+        <div class="grid">
+            <div class="card">
+                <h3>Tab Synchronization</h3>
+                <p>Standard SSE opens a connection for every tab. Pravah uses <strong>Leader Election</strong> via BroadcastChannel to ensure only one connection exists across all tabs, reducing server load by up to 90%.</p>
+            </div>
+            <div class="card">
+                <h3>Signal-Only Security</h3>
+                <p>Never leak sensitive data. Pravah enforces a <strong>Signal-Only</strong> policy—sending only event names and resource IDs. The client then fetches data via your secure, authenticated REST APIs.</p>
+            </div>
+            <div class="card">
+                <h3>Dual-Core Engine</h3>
+                <p>Choose your flavor. A lightweight <strong>Node.js</strong> implementation for rapid prototyping, or a high-concurrency <strong>Go</strong> engine for massive scale.</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="visualizer">
+        <div class="signal-dot" style="top: 30%; animation-delay: 0s;"></div>
+        <div class="signal-dot" style="top: 50%; animation-delay: 1.5s;"></div>
+        <div class="signal-dot" style="top: 70%; animation-delay: 3s;"></div>
+        <div style="text-align: center; color: #444; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 4px;">Real-time Signal Flow</div>
+    </div>
+
+    <section id="get-started" class="section">
+        <div class="section-title">
+            <h2>Quick Start</h2>
+            <p>Launch BizBandhan Pravah instantly using Docker. No source code required.</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-link active" onclick="openTab(event, 'docker-cli')">Docker CLI</button>
+            <button class="tab-link" onclick="openTab(event, 'docker-compose')">Docker Compose</button>
+        </div>
+
+        <div id="docker-cli" class="tab-content active">
+            <p style="color: var(--text-dim); text-align: center;">Run the high-performance Go engine directly:</p>
+            <pre><code>docker run -d -p 3000:3000 --name bizbandhan \
+  -e MONGODB=mongodb://your-mongo-ip/pravah \
+  optiwariindia/pravah-go:1.0.0</code></pre>
+        </div>
+
+        <div id="docker-compose" class="tab-content">
+            <p style="color: var(--text-dim); text-align: center;">Create a <code>docker-compose.yml</code> and run <code>docker-compose up -d</code>:</p>
+            <pre><code>services:
+  bizbandhan:
+    image: optiwariindia/pravah-go:1.0.0
+    restart: unless-stopped
+    ports:
+      - "3000:3000" # Publish port for external access
+    environment:
+      - PORT=3000
+      - MONGODB=mongodb://db/pravah
+    depends_on:
+      - db
+
+  db:
+    image: mongo:latest
+    restart: unless-stopped
+    volumes:
+      - ./db-data:/data/db</code></pre>
+        </div>
+
+        <div style="background: rgba(45, 212, 191, 0.1); border-left: 4px solid var(--accent); padding: 20px; margin-top: 30px; border-radius: 8px;">
+            <p style="margin: 0; font-size: 0.95rem;">
+                <strong>💡 Pro Tip: Port Publishing</strong><br>
+                By default, our images use port <code>3000</code>. If you are deploying behind a reverse proxy (like Nginx), you can skip port publishing and use internal Docker networking. For direct access, use <code>-p 3000:3000</code>.
+            </p>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-title">
+            <h2>Unified SDK</h2>
+            <p>A single SDK for Vanilla JS and React with built-in Leader Election.</p>
+        </div>
+        <div class="tabs">
+            <button class="tab-link active" onclick="openTab(event, 'sdk-vanilla')">Vanilla JS</button>
+            <button class="tab-link" onclick="openTab(event, 'sdk-react')">React Hooks</button>
+        </div>
+
+        <div id="sdk-vanilla" class="tab-content active">
+            <pre><code>import Pravah from 'pravah-sdk';
+
+const pravah = new Pravah({
+  baseUrl: '/pravah',
+  streams: ['global']
+});
+
+pravah.on('bid-updated', (signal) => {
+  console.log('Update received for ID:', signal.id);
+});</code></pre>
+        </div>
+
+        <div id="sdk-react" class="tab-content">
+            <pre><code>import { PravahProvider, usePravahListener } from 'pravah-sdk';
+
+// Wrap your app once
+<PravahProvider options={{ baseUrl: '/pravah' }}>
+  <App />
+</PravahProvider>
+
+// Use anywhere
+const MyComponent = () => {
+  usePravahListener(null, 'order-placed', (signal) => {
+    alert(`New order: ${signal.id}`);
+  });
+  return &lt;div&gt;Dashboard&lt;/div&gt;;
+};</code></pre>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-title">
+            <h2>Proxy Configuration</h2>
+            <p>Optimized for SSE with zero-buffering.</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab-link active" onclick="openTab(event, 'nginx')">Nginx</button>
+            <button class="tab-link" onclick="openTab(event, 'caddy')">Caddy</button>
+        </div>
+
+        <div id="nginx" class="tab-content active">
+            <pre><code>location /pravah {
+    proxy_pass http://localhost:3000/pravah;
+    proxy_set_header Connection '';
+    proxy_http_version 1.1;
+    chunked_transfer_encoding off;
+    proxy_buffering off;
+    proxy_cache off;
+}</code></pre>
+        </div>
+
+        <div id="caddy" class="tab-content">
+            <pre><code>yourdomain.com {
+    reverse_proxy /pravah/* localhost:3000 {
+        flush_interval -1
+    }
+}</code></pre>
+        </div>
+    </section>
+{% endblock %}

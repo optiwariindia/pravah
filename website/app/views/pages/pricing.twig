@@ -1,0 +1,50 @@
+{% extends 'layouts/main.twig' %}
+
+{% block title %}Pricing | BizBandhan Pravah{% endblock %}
+
+{% block content %}
+    <section class="section">
+        <div class="section-title">
+            <h2>Scalable Pricing for Every Project</h2>
+            <p>From hobbyists to enterprises, choose the flow that fits your scale.</p>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h3 style="color: #94a3b8;">Community</h3>
+                <div style="font-size: 2.5rem; font-weight: 800; margin: 20px 0;">$0</div>
+                <p>Self-hosted, open source engine.</p>
+                <ul style="list-style: none; padding: 0; color: var(--text-dim);">
+                    <li>✔ Unlimited Connections</li>
+                    <li>✔ Community Support</li>
+                    <li>✔ Full Source Code</li>
+                </ul>
+                <a href="/#get-started" class="btn" style="border: 1px solid #333; color: white; width: 100%; text-align: center; margin-top: 20px;">Deploy Now</a>
+            </div>
+
+            <div class="card" style="border: 1px solid var(--primary); transform: scale(1.05);">
+                <h3 style="color: var(--primary);">Developer (SaaS)</h3>
+                <div style="font-size: 2.5rem; font-weight: 800; margin: 20px 0;">$19<small style="font-size: 1rem; opacity: 0.5;">/mo</small></div>
+                <p>Managed hosting, zero maintenance.</p>
+                <ul style="list-style: none; padding: 0; color: var(--text-dim);">
+                    <li>✔ 1,000 Concurrent Tabs</li>
+                    <li>✔ Unlimited Signals</li>
+                    <li>✔ Email Support</li>
+                </ul>
+                <a href="/register" class="btn btn-primary" style="width: 100%; text-align: center; margin-top: 20px;">Get Started</a>
+            </div>
+
+            <div class="card">
+                <h3 style="color: var(--accent);">Enterprise</h3>
+                <div style="font-size: 2rem; font-weight: 800; margin: 20px 0;">Custom</div>
+                <p>Dedicated clusters and custom SLAs.</p>
+                <ul style="list-style: none; padding: 0; color: var(--text-dim);">
+                    <li>✔ Dedicated Go Engines</li>
+                    <li>✔ Custom Domains</li>
+                    <li>✔ 24/7 Priority Support</li>
+                </ul>
+                <a href="mailto:support@bizbandhan.com" class="btn" style="border: 1px solid #333; color: white; width: 100%; text-align: center; margin-top: 20px;">Contact Sales</a>
+            </div>
+        </div>
+    </section>
+{% endblock %}
