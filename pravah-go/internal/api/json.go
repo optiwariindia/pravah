@@ -7,9 +7,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sampledge-sse/pravah-go/internal/utils"
 )
 
 func decodeStrictJSON(c *gin.Context, target interface{}) error {
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, utils.MaxRequestBodyBytes())
 	decoder := json.NewDecoder(c.Request.Body)
 	decoder.DisallowUnknownFields()
 

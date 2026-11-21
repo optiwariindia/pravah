@@ -76,18 +76,19 @@ func PublishHandler(c *gin.Context) {
 		},
 	}
 
+	delivered := 0
 	for _, client := range clients {
-		select {
-		case client.Signal <- signal:
-		default:
-			log.Printf("[Pravah] Client %s buffer full, dropping message", client.ID)
+		if client.Enqueue(signal) {
+			delivered++
+		} else {
+			log.Printf("[Pravah] Client %s closed: %s", client.ID, client.CloseReason())
 		}
 	}
 
 	c.JSON(http.StatusAccepted, gin.H{
 		"success": true,
 		"message": "Event published",
-		"count":   len(clients),
+		"count":   delivered,
 		"eventId": event.ID.Hex(),
 	})
 }

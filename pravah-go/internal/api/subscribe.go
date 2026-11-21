@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -16,6 +17,7 @@ import (
 	"github.com/sampledge-sse/pravah-go/internal/core"
 	"github.com/sampledge-sse/pravah-go/internal/db"
 	"github.com/sampledge-sse/pravah-go/internal/models"
+	"github.com/sampledge-sse/pravah-go/internal/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -56,6 +58,10 @@ func SubscribeHandler(c *gin.Context) {
 	if len(streams) == 0 {
 		streams["global"] = struct{}{}
 	}
+	if len(streams) > utils.MaxSubscriptionStreams() {
+		badRequest(c, fmt.Sprintf("A subscription may contain at most %d streams.", utils.MaxSubscriptionStreams()))
+		return
+	}
 	authorized, streams := authorizedStreams(claims, streams)
 	if !authorized {
 		c.JSON(http.StatusForbidden, gin.H{
@@ -82,6 +88,13 @@ func SubscribeHandler(c *gin.Context) {
 
 	replay, err := loadReplayEvents(c, claims.AppID, streams, lastEventID)
 	if err != nil {
+		if errors.Is(err, errReplayLimitExceeded) {
+			c.JSON(http.StatusGone, gin.H{
+				"error":   "Replay Limit Exceeded",
+				"message": "Reconnect without Last-Event-ID and refresh the application state.",
+			})
+			return
+		}
 		log.Printf("[Pravah] Replay query failed: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Unable to replay missed events."})
 		return
@@ -116,7 +129,7 @@ func SubscribeHandler(c *gin.Context) {
 		c.Writer.Flush()
 	}
 
-	ticker := time.NewTicker(30 * time.Second)
+	ticker := time.NewTicker(utils.HeartbeatInterval())
 	defer ticker.Stop()
 
 	c.Stream(func(w io.Writer) bool {
@@ -129,6 +142,9 @@ func SubscribeHandler(c *gin.Context) {
 				return false
 			}
 			return true
+		case <-client.Done:
+			log.Printf("[Pravah] Stream Closed: %s (Reason: %s)", connectionID, client.CloseReason())
+			return false
 		case <-ticker.C:
 			heartbeat := map[string]interface{}{
 				"timestamp": time.Now().Format(time.RFC3339),
@@ -152,6 +168,8 @@ func getKeys(m map[string]struct{}) []string {
 	return keys
 }
 
+var errReplayLimitExceeded = errors.New("replay event limit exceeded")
+
 func loadReplayEvents(c *gin.Context, appID string, streams map[string]struct{}, lastEventID string) ([]core.Signal, error) {
 	if lastEventID == "" {
 		return nil, nil
@@ -171,7 +189,9 @@ func loadReplayEvents(c *gin.Context, appID string, streams map[string]struct{},
 	cursor, err := db.Database.Collection("events").Find(
 		c.Request.Context(),
 		filter,
-		options.Find().SetSort(bson.D{{Key: "_id", Value: 1}}),
+		options.Find().
+			SetSort(bson.D{{Key: "_id", Value: 1}}).
+			SetLimit(int64(utils.MaxReplayEvents()+1)),
 	)
 	if err != nil {
 		return nil, err
@@ -181,6 +201,9 @@ func loadReplayEvents(c *gin.Context, appID string, streams map[string]struct{},
 	var events []models.Event
 	if err := cursor.All(c.Request.Context(), &events); err != nil {
 		return nil, err
+	}
+	if len(events) > utils.MaxReplayEvents() {
+		return nil, errReplayLimitExceeded
 	}
 
 	signals := make([]core.Signal, 0, len(events))
@@ -194,6 +217,7 @@ func loadReplayEvents(c *gin.Context, appID string, streams map[string]struct{},
 			},
 		})
 	}
+
 	return signals, nil
 }
 

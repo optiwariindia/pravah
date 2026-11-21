@@ -7,7 +7,7 @@ Pravah MVP1 Tasks:
         ☐ Document deferred Phase 2 features such as hosted infrastructure, horizontal scaling, and enterprise analytics.
     Establish application security [Backend]:
         ✔ Restrict application registration so a public caller cannot create unlimited API keys.
-        ☐ Validate and normalize stream names, event names, identifiers, and payload sizes.
+        ✔ Validate stream names, event names, identifiers, request bodies, and configured operational limits.
         ✔ Prevent the publish API from accepting or retaining arbitrary metadata in the signal-only path.
         ☐ Add secure production cookie settings controlled through environment configuration.
         ✔ Configure CORS from an environment allowlist instead of allowing every origin with credentials.
@@ -27,8 +27,8 @@ Pravah MVP1 Tasks:
         ☐ Return health status that reflects database availability without misreporting a degraded service as healthy.
     Harden connection management [Backend]:
         ☐ Remove disconnected clients from the registry on every shutdown and error path.
-        ☐ Add configurable heartbeat, client-buffer, and stream limits.
-        ☐ Close or backpressure clients whose buffers are consistently full instead of silently dropping events.
+        ✔ Add configurable heartbeat, client-buffer, stream, replay, and request-size limits.
+        ✔ Close clients whose buffers are full instead of silently dropping events.
         ☐ Add structured logs for connection open/close, authentication failures, publish failures, replay, and dropped delivery.
         ☐ Add metrics for active connections, publications, delivery latency, replay count, and delivery failures.
         ☐ Verify concurrent publish and client removal are safe under load.

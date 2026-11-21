@@ -3,7 +3,9 @@ package utils
 import (
 	"errors"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 )
 
 var requiredEnv = []string{
@@ -27,6 +29,26 @@ func CheckEnvironmentVariables() error {
 		}
 		if len(strings.TrimSpace(os.Getenv("ADMIN_API_KEY"))) < 32 {
 			return errors.New("ADMIN_API_KEY must contain at least 32 characters")
+		}
+		for _, setting := range []struct {
+			name string
+			min  int
+			max  int
+		}{
+			{"SSE_HEARTBEAT_INTERVAL_SECONDS", 5, 300},
+			{"CLIENT_SIGNAL_BUFFER", 1, 10000},
+			{"MAX_SUBSCRIPTION_STREAMS", 1, 128},
+			{"MAX_REPLAY_EVENTS", 1, 100000},
+			{"MAX_REQUEST_BODY_BYTES", 1024, 1048576},
+		} {
+			raw := os.Getenv(setting.name)
+			if raw == "" {
+				continue
+			}
+			value, err := strconv.Atoi(raw)
+			if err != nil || value < setting.min || value > setting.max {
+				return errors.New(setting.name + " is outside its supported range")
+			}
 		}
 		return nil
 	}
@@ -67,4 +89,36 @@ func CORSAllowedOrigins() []string {
 		}
 	}
 	return origins
+}
+
+func HeartbeatInterval() time.Duration {
+	return time.Duration(positiveIntEnv("SSE_HEARTBEAT_INTERVAL_SECONDS", 30, 5, 300)) * time.Second
+}
+
+func ClientSignalBuffer() int {
+	return positiveIntEnv("CLIENT_SIGNAL_BUFFER", 64, 1, 10000)
+}
+
+func MaxSubscriptionStreams() int {
+	return positiveIntEnv("MAX_SUBSCRIPTION_STREAMS", 32, 1, 128)
+}
+
+func MaxReplayEvents() int {
+	return positiveIntEnv("MAX_REPLAY_EVENTS", 1000, 1, 100000)
+}
+
+func MaxRequestBodyBytes() int64 {
+	return int64(positiveIntEnv("MAX_REQUEST_BODY_BYTES", 16384, 1024, 1048576))
+}
+
+func positiveIntEnv(name string, defaultValue, min, max int) int {
+	raw := os.Getenv(name)
+	if raw == "" {
+		return defaultValue
+	}
+	value, err := strconv.Atoi(raw)
+	if err != nil || value < min || value > max {
+		return defaultValue
+	}
+	return value
 }

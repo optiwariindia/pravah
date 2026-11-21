@@ -13,6 +13,19 @@ docker compose up -d --build pravah-go db
 Ports are intentionally not published to the host. Access `pravah-go:3000` from
 the Compose network, by container IP, or through a configured reverse proxy.
 
+Connection and request limits are configurable:
+
+| Environment variable | Default | Supported range |
+| --- | ---: | ---: |
+| `SSE_HEARTBEAT_INTERVAL_SECONDS` | 30 | 5-300 |
+| `CLIENT_SIGNAL_BUFFER` | 64 | 1-10000 |
+| `MAX_SUBSCRIPTION_STREAMS` | 32 | 1-128 |
+| `MAX_REPLAY_EVENTS` | 1000 | 1-100000 |
+| `MAX_REQUEST_BODY_BYTES` | 16384 | 1024-1048576 |
+
+If a client buffer fills, Pravah closes that connection instead of silently
+dropping signals. A reconnecting client can replay retained events by event ID.
+
 ## 2. Registering Your Application
 Before publishing events, you must register your parent application to obtain an API Key.
 

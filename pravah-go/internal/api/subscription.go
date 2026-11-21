@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sampledge-sse/pravah-go/internal/auth"
+	"github.com/sampledge-sse/pravah-go/internal/utils"
 )
 
 const (
@@ -28,8 +29,8 @@ func CreateSubscriptionTokenHandler(c *gin.Context) {
 	}
 
 	var req SubscriptionTokenRequest
-	if err := decodeStrictJSON(c, &req); err != nil || len(req.Streams) == 0 || len(req.Streams) > 64 {
-		badRequest(c, "A valid JSON body with at least one stream is required.")
+	if err := decodeStrictJSON(c, &req); err != nil || len(req.Streams) == 0 || len(req.Streams) > utils.MaxSubscriptionStreams() {
+		badRequest(c, "A valid JSON body with 1 to the configured maximum number of streams is required.")
 		return
 	}
 

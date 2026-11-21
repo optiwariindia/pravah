@@ -3,6 +3,8 @@ package core
 import (
 	"sync"
 	"time"
+
+	"github.com/sampledge-sse/pravah-go/internal/utils"
 )
 
 type Client struct {
@@ -12,12 +14,47 @@ type Client struct {
 	Streams     map[string]struct{}
 	ConnectedAt time.Time
 	Signal      chan Signal
+	Done        chan struct{}
+	closeOnce   sync.Once
+	closeReason string
 }
 
 type Signal struct {
 	ID    string
 	Event string
 	Data  map[string]interface{}
+}
+
+func (c *Client) Enqueue(signal Signal) bool {
+	select {
+	case <-c.Done:
+		return false
+	default:
+	}
+
+	select {
+	case c.Signal <- signal:
+		return true
+	default:
+		c.Close("buffer_full")
+		return false
+	}
+}
+
+func (c *Client) Close(reason string) {
+	c.closeOnce.Do(func() {
+		c.closeReason = reason
+		close(c.Done)
+	})
+}
+
+func (c *Client) CloseReason() string {
+	select {
+	case <-c.Done:
+		return c.closeReason
+	default:
+		return ""
+	}
 }
 
 type ClientManager struct {
@@ -52,7 +89,8 @@ func (cm *ClientManager) AddClient(connectionID, appID, pravahID string, streams
 		PravahID:    pravahID,
 		Streams:     streams,
 		ConnectedAt: time.Now(),
-		Signal:      make(chan Signal, 10),
+		Signal:      make(chan Signal, utils.ClientSignalBuffer()),
+		Done:        make(chan struct{}),
 	}
 	cm.clients[connectionID] = client
 	return client
