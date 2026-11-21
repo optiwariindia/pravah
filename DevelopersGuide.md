@@ -22,6 +22,7 @@ Connection and request limits are configurable:
 | `MAX_SUBSCRIPTION_STREAMS` | 32 | 1-128 |
 | `MAX_REPLAY_EVENTS` | 1000 | 1-100000 |
 | `MAX_REQUEST_BODY_BYTES` | 16384 | 1024-1048576 |
+| `DATABASE_OPERATION_TIMEOUT_SECONDS` | 3 | 1-30 |
 
 If a client buffer fills, Pravah closes that connection instead of silently
 dropping signals. A reconnecting client can replay retained events by event ID.
@@ -117,6 +118,9 @@ Trigger real-time signals from your backend using the `POST /pravah/publish` end
 Publishing accepts only the event name, stream ID, and resource ID. Additional
 payload fields are rejected. Reconnecting clients automatically replay retained
 events by sending the standard `Last-Event-ID` header.
+The publish response includes `persisted` and `replayable`. If MongoDB is
+temporarily unavailable, accepted signals are delivered live with both fields
+set to `false`.
 
 ## 6. Monitoring
 Monitor the service health and active connection metrics:

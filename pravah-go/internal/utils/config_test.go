@@ -37,6 +37,7 @@ func TestOperationalLimitsFromEnvironment(t *testing.T) {
 	t.Setenv("MAX_SUBSCRIPTION_STREAMS", "16")
 	t.Setenv("MAX_REPLAY_EVENTS", "500")
 	t.Setenv("MAX_REQUEST_BODY_BYTES", "8192")
+	t.Setenv("DATABASE_OPERATION_TIMEOUT_SECONDS", "5")
 
 	if got := HeartbeatInterval(); got != 45*time.Second {
 		t.Fatalf("unexpected heartbeat interval: %s", got)
@@ -53,6 +54,9 @@ func TestOperationalLimitsFromEnvironment(t *testing.T) {
 	if got := MaxRequestBodyBytes(); got != 8192 {
 		t.Fatalf("unexpected request body limit: %d", got)
 	}
+	if got := DatabaseOperationTimeout(); got != 5*time.Second {
+		t.Fatalf("unexpected database operation timeout: %s", got)
+	}
 }
 
 func TestOperationalLimitsUseDefaultsForInvalidValues(t *testing.T) {
@@ -61,6 +65,7 @@ func TestOperationalLimitsUseDefaultsForInvalidValues(t *testing.T) {
 	t.Setenv("MAX_SUBSCRIPTION_STREAMS", "129")
 	t.Setenv("MAX_REPLAY_EVENTS", "invalid")
 	t.Setenv("MAX_REQUEST_BODY_BYTES", "999999999")
+	t.Setenv("DATABASE_OPERATION_TIMEOUT_SECONDS", "0")
 
 	if HeartbeatInterval() != 30*time.Second {
 		t.Fatal("unexpected heartbeat fallback")
@@ -76,6 +81,9 @@ func TestOperationalLimitsUseDefaultsForInvalidValues(t *testing.T) {
 	}
 	if MaxRequestBodyBytes() != 16384 {
 		t.Fatal("unexpected body-size fallback")
+	}
+	if DatabaseOperationTimeout() != 3*time.Second {
+		t.Fatal("unexpected database operation timeout fallback")
 	}
 }
 

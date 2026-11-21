@@ -23,8 +23,8 @@ Pravah MVP1 Tasks:
         ✔ Read the `Last-Event-ID` request header and replay missed events in order before live delivery.
         ✔ Limit replay queries by the event retention window and the client's authorized streams.
         ✔ Ensure replay and live delivery cannot duplicate or skip signals during subscription startup.
-        ☐ Allow live publishing to continue when persistence is unavailable, with explicit degraded-mode signaling.
-        ☐ Return health status that reflects database availability without misreporting a degraded service as healthy.
+        ✔ Allow live publishing to continue when persistence is unavailable, with explicit degraded-mode signaling.
+        ✔ Return health status that reflects database availability without misreporting a degraded service as healthy.
     Harden connection management [Backend]:
         ☐ Remove disconnected clients from the registry on every shutdown and error path.
         ✔ Add configurable heartbeat, client-buffer, stream, replay, and request-size limits.

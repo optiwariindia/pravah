@@ -40,6 +40,7 @@ func CheckEnvironmentVariables() error {
 			{"MAX_SUBSCRIPTION_STREAMS", 1, 128},
 			{"MAX_REPLAY_EVENTS", 1, 100000},
 			{"MAX_REQUEST_BODY_BYTES", 1024, 1048576},
+			{"DATABASE_OPERATION_TIMEOUT_SECONDS", 1, 30},
 		} {
 			raw := os.Getenv(setting.name)
 			if raw == "" {
@@ -109,6 +110,10 @@ func MaxReplayEvents() int {
 
 func MaxRequestBodyBytes() int64 {
 	return int64(positiveIntEnv("MAX_REQUEST_BODY_BYTES", 16384, 1024, 1048576))
+}
+
+func DatabaseOperationTimeout() time.Duration {
+	return time.Duration(positiveIntEnv("DATABASE_OPERATION_TIMEOUT_SECONDS", 3, 1, 30)) * time.Second
 }
 
 func positiveIntEnv(name string, defaultValue, min, max int) int {

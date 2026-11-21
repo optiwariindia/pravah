@@ -15,17 +15,27 @@ func HealthHandler(c *gin.Context) {
 	defer cancel()
 
 	mongoStatus := "connected"
-	err := db.Client.Ping(ctx, nil)
-	if err != nil {
+	if !db.Ping(ctx) {
 		mongoStatus = "disconnected"
+	} else {
+		db.EnsureIndexes()
 	}
 
 	cm := core.GetClientManager()
 
-	c.JSON(http.StatusOK, gin.H{
-		"status":      "ok",
-		"database":    mongoStatus,
-		"connections": cm.GetConnectionCount(),
-		"uptime":      time.Since(core.StartTime).String(),
+	status := "ok"
+	httpStatus := http.StatusOK
+	if mongoStatus == "disconnected" {
+		status = "degraded"
+		httpStatus = http.StatusServiceUnavailable
+	}
+
+	c.JSON(httpStatus, gin.H{
+		"status":       status,
+		"liveDelivery": true,
+		"replay":       mongoStatus == "connected",
+		"database":     mongoStatus,
+		"connections":  cm.GetConnectionCount(),
+		"uptime":       time.Since(core.StartTime).String(),
 	})
 }

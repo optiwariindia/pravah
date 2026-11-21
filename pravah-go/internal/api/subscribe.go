@@ -88,6 +88,13 @@ func SubscribeHandler(c *gin.Context) {
 
 	replay, err := loadReplayEvents(c, claims.AppID, streams, lastEventID)
 	if err != nil {
+		if !db.IsHealthy() && lastEventID != "" {
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"error":   "Replay Unavailable",
+				"message": "MongoDB is unavailable. Reconnect without Last-Event-ID to receive live events.",
+			})
+			return
+		}
 		if errors.Is(err, errReplayLimitExceeded) {
 			c.JSON(http.StatusGone, gin.H{
 				"error":   "Replay Limit Exceeded",
@@ -112,6 +119,7 @@ func SubscribeHandler(c *gin.Context) {
 		"pravahId":     pravahID,
 		"streams":      getKeys(streams),
 		"timestamp":    time.Now().Format(time.RFC3339),
+		"degraded":     !db.IsHealthy(),
 	}
 	if err := writeSSEEvent(c.Writer, "", "connected", initData); err != nil {
 		return

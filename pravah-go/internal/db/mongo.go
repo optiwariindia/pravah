@@ -3,8 +3,10 @@ package db
 import (
 	"context"
 	"log"
+	"sync/atomic"
 	"time"
 
+	"github.com/sampledge-sse/pravah-go/internal/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -12,19 +14,18 @@ import (
 
 var Client *mongo.Client
 var Database *mongo.Database
+var healthy atomic.Bool
+var indexesReady atomic.Bool
 
 func Connect(uri string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+	client, err := mongo.Connect(ctx, options.Client().
+		ApplyURI(uri).
+		SetServerSelectionTimeout(utils.DatabaseOperationTimeout()))
 	if err != nil {
 		log.Fatalf("Failed to connect to MongoDB: %v", err)
-	}
-
-	err = client.Ping(ctx, nil)
-	if err != nil {
-		log.Fatalf("Failed to ping MongoDB: %v", err)
 	}
 
 	Client = client
@@ -32,11 +33,36 @@ func Connect(uri string) {
 	// Typically the URI is mongodb://host:port/dbname
 	// For simplicity, let's assume the db name is 'pravah' if not specified.
 	Database = client.Database("pravah")
-	EnsureIndexes()
-	log.Println("Connected to MongoDB")
+	if Ping(ctx) {
+		log.Println("Connected to MongoDB")
+		EnsureIndexes()
+	} else {
+		log.Println("MongoDB is unavailable; starting in degraded live-delivery mode")
+	}
+}
+
+func Ping(ctx context.Context) bool {
+	if Client == nil {
+		return false
+	}
+	err := Client.Ping(ctx, nil)
+	healthy.Store(err == nil)
+	return err == nil
+}
+
+func IsHealthy() bool {
+	return healthy.Load()
+}
+
+func MarkUnhealthy() {
+	healthy.Store(false)
 }
 
 func EnsureIndexes() {
+	if indexesReady.Load() || Database == nil {
+		return
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
@@ -51,7 +77,8 @@ func EnsureIndexes() {
 		},
 	}
 	if _, err := Database.Collection("events").Indexes().CreateMany(ctx, eventIndexes); err != nil {
-		log.Fatalf("Failed to create event indexes: %v", err)
+		log.Printf("Failed to create event indexes: %v", err)
+		return
 	}
 
 	configIndex := mongo.IndexModel{
@@ -59,6 +86,8 @@ func EnsureIndexes() {
 		Options: options.Index().SetUnique(true).SetName("tenant_app_id"),
 	}
 	if _, err := Database.Collection("app_configs").Indexes().CreateOne(ctx, configIndex); err != nil {
-		log.Fatalf("Failed to create app config indexes: %v", err)
+		log.Printf("Failed to create app config indexes: %v", err)
+		return
 	}
+	indexesReady.Store(true)
 }

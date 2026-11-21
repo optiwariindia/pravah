@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"regexp"
@@ -42,8 +43,12 @@ func PublishHandler(c *gin.Context) {
 	}
 	config, err := getAppConfig(c.Request.Context(), app.AppID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Unable to load tenant configuration."})
-		return
+		db.MarkUnhealthy()
+		log.Printf("[Pravah] Tenant config unavailable; using default retention for live delivery: %v", err)
+		config = models.AppConfig{
+			AppID:          app.AppID,
+			RetentionHours: utils.EventRetentionHours(),
+		}
 	}
 
 	createdAt := time.Now()
@@ -57,11 +62,13 @@ func PublishHandler(c *gin.Context) {
 		ExpiresAt: utils.EventExpiration(createdAt, config.RetentionHours),
 	}
 
-	_, err = db.Database.Collection("events").InsertOne(c.Request.Context(), event)
+	persistContext, cancel := context.WithTimeout(c.Request.Context(), utils.DatabaseOperationTimeout())
+	_, err = db.Database.Collection("events").InsertOne(persistContext, event)
+	cancel()
+	persisted := err == nil
 	if err != nil {
-		log.Printf("[Pravah] DB Error: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": err.Error()})
-		return
+		db.MarkUnhealthy()
+		log.Printf("[Pravah] Persistence unavailable; publishing live-only signal: %v", err)
 	}
 
 	// 3. Broadcast
@@ -86,9 +93,11 @@ func PublishHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusAccepted, gin.H{
-		"success": true,
-		"message": "Event published",
-		"count":   delivered,
-		"eventId": event.ID.Hex(),
+		"success":    true,
+		"message":    "Event published",
+		"count":      delivered,
+		"eventId":    event.ID.Hex(),
+		"persisted":  persisted,
+		"replayable": persisted,
 	})
 }
