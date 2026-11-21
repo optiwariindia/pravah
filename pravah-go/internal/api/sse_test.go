@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/sampledge-sse/pravah-go/internal/auth"
 	"github.com/sampledge-sse/pravah-go/internal/core"
 )
 
@@ -66,5 +67,27 @@ func TestIdentifierPattern(t *testing.T) {
 		if identifierPattern.MatchString(value) {
 			t.Errorf("expected %q to be invalid", value)
 		}
+	}
+}
+
+func TestAuthorizedStreamsRejectsUnapprovedStream(t *testing.T) {
+	claims := auth.SubscriptionClaims{
+		AppID:   "app-1",
+		Streams: []string{"project:123"},
+	}
+	ok, streams := authorizedStreams(claims, map[string]struct{}{"project:123": {}, "user:456": {}})
+	if ok || streams != nil {
+		t.Fatal("expected mixed authorized and unauthorized streams to be rejected")
+	}
+}
+
+func TestAuthorizedStreamsReturnsApprovedIntersection(t *testing.T) {
+	claims := auth.SubscriptionClaims{
+		AppID:   "app-1",
+		Streams: []string{"project:123", "user:456"},
+	}
+	ok, streams := authorizedStreams(claims, map[string]struct{}{"project:123": {}})
+	if !ok || len(streams) != 1 {
+		t.Fatalf("expected approved stream, got ok=%v streams=%v", ok, streams)
 	}
 }

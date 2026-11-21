@@ -15,7 +15,8 @@ import Pravah from 'pravah-sdk';
 
 const pravah = new Pravah({
   baseUrl: 'https://your-pravah-instance.com',
-  streams: ['global']
+  streams: ['global'],
+  subscriptionToken: '<short-lived-token>'
 });
 
 pravah.on('bid-updated', (data) => {
@@ -31,7 +32,8 @@ import { usePravah, usePravahListener, usePravahState } from 'pravah-sdk';
 const MyComponent = () => {
   const pravah = usePravah({
     baseUrl: 'https://your-pravah-instance.com',
-    streams: ['user:123', 'global']
+    streams: ['user:123', 'global'],
+    subscriptionToken: '<short-lived-token>'
   });
 
   // 1. Listen for events using a callback
@@ -53,7 +55,7 @@ const MyComponent = () => {
 ## API Reference
 
 ### Core Class: `Pravah`
-- `constructor(options)`: `{ baseUrl: string, streams: string[] }`
+- `constructor(options)`: `{ baseUrl: string, streams: string[], subscriptionToken: string }`
 - `on(event, callback)`: Subscribe to an event.
 - `off(event, callback)`: Unsubscribe from an event.
 

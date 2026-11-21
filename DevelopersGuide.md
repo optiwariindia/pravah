@@ -6,11 +6,12 @@ This guide provides technical instructions for integrating **Pravah** into your 
 Pravah is containerized and ready for deployment using Docker Compose.
 
 ```bash
-docker-compose up -d
+export SUBSCRIPTION_JWT_SECRET="$(openssl rand -hex 32)"
+export ADMIN_API_KEY="$(openssl rand -hex 32)"
+docker compose up -d --build pravah-go db
 ```
-Default ports:
-- **Pravah Service:** `3000`
-- **MongoDB:** `27017`
+Ports are intentionally not published to the host. Access `pravah-go:3000` from
+the Compose network, by container IP, or through a configured reverse proxy.
 
 ## 2. Registering Your Application
 Before publishing events, you must register your parent application to obtain an API Key.
@@ -18,8 +19,9 @@ Before publishing events, you must register your parent application to obtain an
 1.  Access the internal registration utility: `http://<container-ip>:3000/register.html`
 2.  Alternatively, use the private API:
     ```bash
-    curl -X PUT http://localhost:3000/api/v1/register \
+    curl -X PUT "$PRAVAH_URL/api/v1/register" \
          -H "Content-Type: application/json" \
+         -H "X-ADMIN-KEY: <admin-api-key>" \
          -d '{ "name": "MyProjectName" }'
     ```
 3.  Store the returned `apiKey` securely.
@@ -37,8 +39,23 @@ The SDK automatically handles the identity handshake and tab synchronization.
 ```javascript
 const pravah = new Pravah({
     baseUrl: 'https://pravah-service.com',
-    streams: ['project:123', 'user:456'] // Subscribed streams
+    streams: ['project:123', 'user:456'],
+    subscriptionToken: '<short-lived-subscription-token>'
 });
+```
+
+Issue a short-lived subscription token from your application backend. Tokens
+authorize both live subscriptions and replay:
+
+```bash
+curl -X POST "$PRAVAH_URL/api/v1/subscriptions/token" \
+     -H "Content-Type: application/json" \
+     -H "X-API-KEY: <api-key>" \
+     -d '{
+       "streams": ["project:123", "user:456"],
+       "subject": "user-123",
+       "expiresIn": 900
+     }'
 ```
 
 ### Listening for Signals
@@ -59,7 +76,7 @@ The registration endpoint accepts an optional `retentionHours` value; otherwise
 Update an application's retention period through the authenticated configuration endpoint:
 
 ```bash
-curl -X PUT http://localhost:3000/api/v1/config \
+curl -X PUT "$PRAVAH_URL/api/v1/config" \
      -H "Content-Type: application/json" \
      -H "X-API-KEY: <api-key>" \
      -d '{ "retentionHours": 72 }'

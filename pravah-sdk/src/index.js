@@ -7,6 +7,7 @@ export default class Pravah {
     constructor(options = {}) {
         this.baseUrl = options.baseUrl || ''; // Pravah service URL
         this.streams = options.streams || ['global'];
+        this.subscriptionToken = options.subscriptionToken || '';
         this.id = null;
         this.eventSource = null;
         this.listeners = {};
@@ -106,7 +107,8 @@ export default class Pravah {
 
         const streams = this.streams.map(encodeURIComponent).join(',');
         const lastEventId = this.lastEventId ? `&lastEventId=${encodeURIComponent(this.lastEventId)}` : '';
-        const url = `${this.baseUrl}/pravah/subscribe?streams=${streams}${lastEventId}`;
+        const token = `&token=${encodeURIComponent(this.subscriptionToken)}`;
+        const url = `${this.baseUrl}/pravah/subscribe?streams=${streams}${token}${lastEventId}`;
         this.eventSource = new EventSource(url, { withCredentials: true });
 
         this.attachSignalListener();

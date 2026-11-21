@@ -62,6 +62,8 @@ const MyComponent = () => {
 The Go service is the supported backend:
 
 ```bash
+export SUBSCRIPTION_JWT_SECRET="$(openssl rand -hex 32)"
+export ADMIN_API_KEY="$(openssl rand -hex 32)"
 docker compose up --build pravah-go db
 ```
 

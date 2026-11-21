@@ -49,6 +49,7 @@ func PublishHandler(c *gin.Context) {
 	createdAt := time.Now()
 	event := models.Event{
 		ID:        primitive.NewObjectID(),
+		AppID:     app.AppID,
 		StreamID:  req.StreamID,
 		Event:     req.Event,
 		Data:      req.Data,
@@ -64,7 +65,7 @@ func PublishHandler(c *gin.Context) {
 	}
 
 	// 3. Broadcast
-	clients := core.GetClientManager().GetClientsByStream(req.StreamID)
+	clients := core.GetClientManager().GetClientsByStream(app.AppID, req.StreamID)
 
 	signal := core.Signal{
 		ID:    event.ID.Hex(),

@@ -1,0 +1,86 @@
+Pravah MVP1 Tasks:
+    Confirm MVP1 scope [Project Manager]:
+        ✔ Confirm Go is the primary backend and mark the Node implementation as legacy or remove it from the supported runtime.
+        ✔ Approve the signal-only payload contract: event name, resource ID, stream ID, timestamp, and event ID.
+        ☐ Define supported deployment targets, MongoDB version, and the production HTTPS strategy.
+        ☐ Define MVP limits for concurrent connections, replay retention, payload size, and publication throughput.
+        ☐ Document deferred Phase 2 features such as hosted infrastructure, horizontal scaling, and enterprise analytics.
+    Establish application security [Backend]:
+        ✔ Restrict application registration so a public caller cannot create unlimited API keys.
+        ☐ Validate and normalize stream names, event names, identifiers, and payload sizes.
+        ✔ Prevent the publish API from accepting or retaining arbitrary metadata in the signal-only path.
+        ☐ Add secure production cookie settings controlled through environment configuration.
+        ✔ Configure CORS from an environment allowlist instead of allowing every origin with credentials.
+        ✔ Add request-scoped database contexts and protect tenant configuration with a signing secret.
+        ✔ Define and implement signed, short-lived per-stream subscription authorization for supported stream types.
+        ✔ Isolate persisted events, live clients, and replay by tenant application ID.
+        ✔ Redact subscription tokens from request logs.
+        ☐ Avoid returning database errors or other internal implementation details in API responses.
+    Implement reliable event delivery [Backend]:
+        ✔ Add expiration time to persisted events and create a MongoDB TTL index for configurable retention.
+        ✔ Emit standards-compliant SSE `id:`, `event:`, and `data:` fields.
+        ✔ Send persisted event IDs to clients and preserve those IDs for reconnection.
+        ✔ Read the `Last-Event-ID` request header and replay missed events in order before live delivery.
+        ✔ Limit replay queries by the event retention window and the client's authorized streams.
+        ✔ Ensure replay and live delivery cannot duplicate or skip signals during subscription startup.
+        ☐ Allow live publishing to continue when persistence is unavailable, with explicit degraded-mode signaling.
+        ☐ Return health status that reflects database availability without misreporting a degraded service as healthy.
+    Harden connection management [Backend]:
+        ☐ Remove disconnected clients from the registry on every shutdown and error path.
+        ☐ Add configurable heartbeat, client-buffer, and stream limits.
+        ☐ Close or backpressure clients whose buffers are consistently full instead of silently dropping events.
+        ☐ Add structured logs for connection open/close, authentication failures, publish failures, replay, and dropped delivery.
+        ☐ Add metrics for active connections, publications, delivery latency, replay count, and delivery failures.
+        ☐ Verify concurrent publish and client removal are safe under load.
+    Complete the browser SDK [SDK]:
+        ☐ Remove the circular dependency between the core SDK and React hooks.
+        ☐ Expose connection states for initializing, connected, reconnecting, disconnected, and closed.
+        ✔ Preserve the last received event ID and reconnect using the SSE client's standard reconnection behavior.
+        ☐ Make leader election safe when multiple tabs claim leadership at the same time.
+        ☐ Coordinate streams consistently across leader and follower tabs.
+        ☐ Add explicit `close()` cleanup for timers, page listeners, BroadcastChannel, and EventSource.
+        ☐ Stop attempting reconnects after the SDK has been intentionally closed.
+        ☐ Add clear handling for missing browser APIs and initialization failures.
+        ☐ Add named and default package exports that work in ESM, CommonJS, UMD, and browser CDN usage.
+    Complete React integration [Frontend]:
+        ☐ Return stable React state from `usePravah` so consumers rerender when connection or SDK state becomes available.
+        ☐ Prevent stale event callbacks and unnecessary SDK recreation on equivalent options.
+        ☐ Cover `usePravahState`, listener cleanup, reconnects, and unmount behavior with tests.
+        ☐ Align the React examples with the implemented public API and returned values.
+    Add automated coverage [QA]:
+        ✔ Add Go unit tests for token validation, authorization, retention, identifier validation, and SSE serialization.
+        ☐ Add Go integration tests for handshake, registration, publish, subscribe, replay, and health endpoints.
+        ☐ Add SDK tests for leader election, cross-tab delivery, reconnection, cleanup, and malformed messages.
+        ☐ Add tests proving the SDK keeps one active EventSource across multiple browser tabs.
+        ☐ Add load tests for the agreed concurrent-connection and publication targets.
+        ☐ Add security tests for invalid API keys, unauthorized streams, oversized payloads, and CORS behavior.
+    Finalize deployment and operations [DevOps]:
+        ✔ Add a Compose profile or command that starts only the supported MVP service and MongoDB.
+        ☐ Make MongoDB persistence and container ports explicit and configurable.
+        ☐ Add container health checks for the Go service and MongoDB dependency.
+        ☐ Add CI for Go formatting, vetting, tests, SDK tests, and SDK build.
+        ☐ Publish versioned, non-root container images to GHCR or Docker Hub.
+        ☐ Add release versioning and changelog conventions across the service and SDK.
+        ☐ Document backup, retention, secret rotation, upgrade, and rollback procedures.
+    Improve developer experience [Developer Experience]:
+        ☐ Publish a focused OpenAPI specification for registration, health, publishing, and subscription.
+        ☐ Add a copy-paste quickstart that starts Pravah, registers an app, publishes a signal, and displays it in a browser.
+        ☐ Add a local playground showing connection status, active streams, and incoming signals.
+        ☐ Publish `pravah-sdk` to npm with verified package metadata and supported-runtime documentation.
+        ☐ Provide React, vanilla JavaScript, curl, Go, and Node publishing examples.
+        ☐ Reconcile README, developer guide, PRD, SRS, and file-structure documentation around the Go architecture.
+        ☐ Add troubleshooting guidance for cookies, CORS, reverse proxies, buffering, and reconnects.
+    Validate market claims [Product]:
+        ☐ Benchmark baseline CPU, memory, active connections, and publication latency in a reproducible environment.
+        ☐ Measure one active SSE connection across multiple tabs and publish the reproduction steps.
+        ☐ Measure startup time and image size for the production container.
+        ☐ Define exactly what the signal-only security guarantee does and does not protect.
+        ☐ Replace unsupported superlatives with benchmark-backed positioning.
+        ☐ Test the landing-page message with at least five target developers or teams.
+    Prepare MVP1 launch [Marketing]:
+        ☐ Publish a demo showing multiple tabs sharing one connection and receiving a resource-invalidating signal.
+        ☐ Create comparison content for polling, WebSockets, hosted notification services, and self-hosted Pravah.
+        ☐ Build launch pages around reliable dashboard updates, lower connection overhead, and deployment control.
+        ☐ Record a short quickstart and load-test demonstration.
+        ☐ Add issue templates, contribution guidance, security reporting, and a public roadmap.
+        ☐ Release MVP1 with a tagged container image, npm package, quickstart, benchmark notes, and known limitations.

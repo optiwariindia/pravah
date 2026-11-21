@@ -12,6 +12,7 @@ type EventData struct {
 
 type Event struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	AppID     string             `bson:"appId" json:"appId"`
 	StreamID  string             `bson:"streamId" json:"streamId"`
 	Event     string             `bson:"event" json:"event"`
 	Data      EventData          `bson:"data" json:"data"`

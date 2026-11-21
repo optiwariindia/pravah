@@ -7,6 +7,7 @@ import (
 
 type Client struct {
 	ID          string
+	AppID       string
 	PravahID    string
 	Streams     map[string]struct{}
 	ConnectedAt time.Time
@@ -41,12 +42,13 @@ func GetClientManager() *ClientManager {
 	return Instance
 }
 
-func (cm *ClientManager) AddClient(connectionID, pravahID string, streams map[string]struct{}) *Client {
+func (cm *ClientManager) AddClient(connectionID, appID, pravahID string, streams map[string]struct{}) *Client {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 
 	client := &Client{
 		ID:          connectionID,
+		AppID:       appID,
 		PravahID:    pravahID,
 		Streams:     streams,
 		ConnectedAt: time.Now(),
@@ -62,13 +64,14 @@ func (cm *ClientManager) RemoveClient(connectionID string) {
 	delete(cm.clients, connectionID)
 }
 
-func (cm *ClientManager) GetClientsByStream(streamID string) []*Client {
+func (cm *ClientManager) GetClientsByStream(appID, streamID string) []*Client {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()
 
 	var matchingClients []*Client
 	for _, client := range cm.clients {
-		if _, ok := client.Streams[streamID]; ok {
+		_, subscribed := client.Streams[streamID]
+		if client.AppID == appID && subscribed {
 			matchingClients = append(matchingClients, client)
 		}
 	}
@@ -93,6 +96,7 @@ func (cm *ClientManager) GetAllClients() []map[string]interface{} {
 		}
 		allClients = append(allClients, map[string]interface{}{
 			"id":          c.ID,
+			"appId":       c.AppID,
 			"pravahId":    c.PravahID,
 			"streams":     streams,
 			"connectedAt": c.ConnectedAt,

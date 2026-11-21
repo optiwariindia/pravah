@@ -46,8 +46,8 @@ func EnsureIndexes() {
 			Options: options.Index().SetExpireAfterSeconds(0).SetName("event_ttl"),
 		},
 		{
-			Keys:    bson.D{{Key: "streamId", Value: 1}, {Key: "_id", Value: 1}},
-			Options: options.Index().SetName("stream_event_id"),
+			Keys:    bson.D{{Key: "appId", Value: 1}, {Key: "streamId", Value: 1}, {Key: "_id", Value: 1}},
+			Options: options.Index().SetName("tenant_stream_event_id"),
 		},
 	}
 	if _, err := Database.Collection("events").Indexes().CreateMany(ctx, eventIndexes); err != nil {

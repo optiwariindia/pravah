@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/sampledge-sse/pravah-go/internal/auth"
 	"github.com/sampledge-sse/pravah-go/internal/core"
 	"github.com/sampledge-sse/pravah-go/internal/db"
 	"github.com/sampledge-sse/pravah-go/internal/models"
@@ -26,6 +27,16 @@ func SubscribeHandler(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error":   "Unauthorized",
 			"message": "No Pravah ID found. Please init first.",
+		})
+		return
+	}
+
+	rawToken := c.Query("token")
+	claims, err := auth.ValidateSubscriptionToken(rawToken)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error":   "Unauthorized",
+			"message": "A valid subscription token is required.",
 		})
 		return
 	}
@@ -45,6 +56,14 @@ func SubscribeHandler(c *gin.Context) {
 	if len(streams) == 0 {
 		streams["global"] = struct{}{}
 	}
+	authorized, streams := authorizedStreams(claims, streams)
+	if !authorized {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error":   "Forbidden",
+			"message": "The subscription token does not authorize one or more requested streams.",
+		})
+		return
+	}
 
 	lastEventID := c.GetHeader("Last-Event-ID")
 	if lastEventID == "" {
@@ -57,11 +76,11 @@ func SubscribeHandler(c *gin.Context) {
 		}
 	}
 
-	client := core.GetClientManager().AddClient(connectionID, pravahID, streams)
+	client := core.GetClientManager().AddClient(connectionID, claims.AppID, pravahID, streams)
 	defer core.GetClientManager().RemoveClient(connectionID)
 	defer log.Printf("[Pravah] Stream Closed: %s (User: %s)", connectionID, pravahID)
 
-	replay, err := loadReplayEvents(c, streams, lastEventID)
+	replay, err := loadReplayEvents(c, claims.AppID, streams, lastEventID)
 	if err != nil {
 		log.Printf("[Pravah] Replay query failed: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Unable to replay missed events."})
@@ -133,7 +152,7 @@ func getKeys(m map[string]struct{}) []string {
 	return keys
 }
 
-func loadReplayEvents(c *gin.Context, streams map[string]struct{}, lastEventID string) ([]core.Signal, error) {
+func loadReplayEvents(c *gin.Context, appID string, streams map[string]struct{}, lastEventID string) ([]core.Signal, error) {
 	if lastEventID == "" {
 		return nil, nil
 	}
@@ -145,6 +164,7 @@ func loadReplayEvents(c *gin.Context, streams map[string]struct{}, lastEventID s
 
 	filter := bson.M{
 		"_id":       bson.M{"$gt": lastID},
+		"appId":     appID,
 		"streamId":  bson.M{"$in": getKeys(streams)},
 		"expiresAt": bson.M{"$gt": time.Now()},
 	}

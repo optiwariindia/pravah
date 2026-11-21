@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -27,17 +28,33 @@ func main() {
 	db.Connect(mongoURI)
 
 	// Initialize Gin
-	r := gin.Default()
+	r := gin.New()
+	r.Use(
+		gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+			return fmt.Sprintf("%s [GIN] %3d | %13v | %s | %-7s %s\n",
+				param.TimeStamp.Format("2006/01/02 - 15:04:05"),
+				param.StatusCode,
+				param.Latency,
+				param.ClientIP,
+				param.Method,
+				param.Request.URL.Path,
+			)
+		}),
+		gin.Recovery(),
+	)
 
 	// Middleware
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"}, // Adjust as needed
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-API-KEY"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
+	corsOrigins := utils.CORSAllowedOrigins()
+	if len(corsOrigins) > 0 {
+		r.Use(cors.New(cors.Config{
+			AllowOrigins:     corsOrigins,
+			AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+			AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-API-KEY", "X-ADMIN-KEY"},
+			ExposeHeaders:    []string{"Content-Length"},
+			AllowCredentials: true,
+			MaxAge:           12 * time.Hour,
+		}))
+	}
 
 	// Static files
 	r.Static("/public", "./public")
@@ -63,7 +80,8 @@ func main() {
 
 	apiV1 := r.Group("/api/v1")
 	{
-		apiV1.PUT("/register", api.RegisterAppHandler)
+		apiV1.PUT("/register", middleware.ValidateAdminAuth(), api.RegisterAppHandler)
+		apiV1.POST("/subscriptions/token", middleware.ValidatePublishAuth(), api.CreateSubscriptionTokenHandler)
 		apiV1.GET("/config", middleware.ValidatePublishAuth(), api.GetAppConfigHandler)
 		apiV1.PUT("/config", middleware.ValidatePublishAuth(), api.UpdateAppConfigHandler)
 	}

@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"crypto/hmac"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sampledge-sse/pravah-go/internal/db"
@@ -25,6 +27,22 @@ func ValidatePublishAuth() gin.HandlerFunc {
 		c.JSON(http.StatusForbidden, gin.H{
 			"error":   "Forbidden",
 			"message": "A valid X-API-KEY is required.",
+		})
+		c.Abort()
+	}
+}
+
+func ValidateAdminAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		expected := os.Getenv("ADMIN_API_KEY")
+		if len(expected) >= 32 && hmac.Equal([]byte(c.GetHeader("X-ADMIN-KEY")), []byte(expected)) {
+			c.Next()
+			return
+		}
+
+		c.JSON(http.StatusForbidden, gin.H{
+			"error":   "Forbidden",
+			"message": "A valid X-ADMIN-KEY is required.",
 		})
 		c.Abort()
 	}
