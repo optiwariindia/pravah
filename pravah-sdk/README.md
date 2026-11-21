@@ -16,12 +16,23 @@ import Pravah from 'pravah-sdk';
 const pravah = new Pravah({
   baseUrl: 'https://your-pravah-instance.com',
   streams: ['global'],
-  subscriptionToken: '<short-lived-token>'
+  // Fetch a fresh token after reconnects or token expiry.
+  getSubscriptionToken: async () => {
+    const response = await fetch('/api/pravah/subscription-token', { credentials: 'include' });
+    return (await response.json()).token;
+  }
 });
 
 pravah.on('bid-updated', (data) => {
   console.log('New bid:', data.price);
 });
+
+pravah.on('statechange', (state) => {
+  console.log('Connection state:', state);
+});
+
+// Call during application teardown.
+pravah.close();
 ```
 
 ## React Usage
@@ -33,7 +44,7 @@ const MyComponent = () => {
   const pravah = usePravah({
     baseUrl: 'https://your-pravah-instance.com',
     streams: ['user:123', 'global'],
-    subscriptionToken: '<short-lived-token>'
+    getSubscriptionToken: fetchSubscriptionToken
   });
 
   // 1. Listen for events using a callback
@@ -55,9 +66,14 @@ const MyComponent = () => {
 ## API Reference
 
 ### Core Class: `Pravah`
-- `constructor(options)`: `{ baseUrl: string, streams: string[], subscriptionToken: string }`
+- `constructor(options)`: `{ baseUrl: string, streams: string[], subscriptionToken?: string, getSubscriptionToken?: () => Promise<string> }`
 - `on(event, callback)`: Subscribe to an event.
 - `off(event, callback)`: Unsubscribe from an event.
+- `close()`: Stop reconnects and release EventSource, timers, listeners, and BroadcastChannel resources.
+- `updateSubscriptionToken(token)`: Replace a static token and reconnect if needed.
+
+The SDK emits `statechange` with `initializing`, `connecting`, `connected`,
+`reconnecting`, `disconnected`, or `closed`.
 
 ### React Hooks
 - `usePravah(options)`: Initializes and manages a Pravah instance.

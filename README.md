@@ -36,22 +36,21 @@ Pravah solves these issues through a specialized architecture:
 Pravah provides a dedicated hook for React projects:
 
 ```javascript
-import { usePravah } from './pravah/usePravah';
+import { usePravah, usePravahListener } from 'pravah-sdk';
 
 const MyComponent = () => {
-    const { isConnected, lastSignal, registerListener } = usePravah({
-        streams: ['test-stream']
+    const pravah = usePravah({
+        streams: ['test-stream'],
+        getSubscriptionToken: fetchSubscriptionToken
     });
 
-    // Reactive event listener
-    registerListener('bid-updated', (data) => {
+    usePravahListener(pravah, 'bid-updated', (data) => {
         console.log('Bid updated:', data.id);
     });
 
     return (
         <div>
-            Status: {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
-            {lastSignal && <p>Latest Event: {lastSignal.event}</p>}
+            Status: {pravah?.connectionState || 'Initializing'}
         </div>
     );
 };

@@ -9,22 +9,14 @@ const mockCloseEventSource = vi.fn();
 const mockChannelClose = vi.fn();
 const mockPostMessage = vi.fn();
 
-vi.mock('./index', async (importOriginal) => {
-    const actual = await importOriginal();
+vi.mock('./core', () => {
     return {
-        ...actual,
-        default: vi.fn().mockImplementation(() => {
-            return {
-                on: mockOn,
-                off: mockOff,
-                closeEventSource: mockCloseEventSource,
-                channel: {
-                    close: mockChannelClose,
-                    postMessage: mockPostMessage
-                },
-                isLeader: true
-            };
-        })
+        default: vi.fn().mockImplementation(() => ({
+            on: mockOn,
+            off: mockOff,
+            close: mockCloseEventSource,
+            isLeader: true
+        }))
     };
 });
 
@@ -34,9 +26,11 @@ describe('pravah-react hooks', () => {
     });
 
     it('usePravah should initialize the SDK', () => {
-        const { result } = renderHook(() => usePravah({ baseUrl: 'http://test', streams: ['test'] }));
+        const { result, unmount } = renderHook(() => usePravah({ baseUrl: 'http://test', streams: ['test'] }));
         expect(result.current).toBeDefined();
-        expect(mockOn).not.toHaveBeenCalled(); // Handled by listeners
+        expect(mockOn).toHaveBeenCalledWith('statechange', expect.any(Function));
+        unmount();
+        expect(mockOff).toHaveBeenCalledWith('statechange', expect.any(Function));
     });
 
     it('usePravahListener should register and unregister listeners', () => {

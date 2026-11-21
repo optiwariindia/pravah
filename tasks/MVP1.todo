@@ -33,25 +33,25 @@ Pravah MVP1 Tasks:
         ☐ Add metrics for active connections, publications, delivery latency, replay count, and delivery failures.
         ☐ Verify concurrent publish and client removal are safe under load.
     Complete the browser SDK [SDK]:
-        ☐ Remove the circular dependency between the core SDK and React hooks.
-        ☐ Expose connection states for initializing, connected, reconnecting, disconnected, and closed.
+        ✔ Remove the circular dependency between the core SDK and React hooks.
+        ✔ Expose connection states for initializing, connected, reconnecting, disconnected, and closed.
         ✔ Preserve the last received event ID and reconnect using the SSE client's standard reconnection behavior.
-        ☐ Make leader election safe when multiple tabs claim leadership at the same time.
-        ☐ Coordinate streams consistently across leader and follower tabs.
-        ☐ Add explicit `close()` cleanup for timers, page listeners, BroadcastChannel, and EventSource.
-        ☐ Stop attempting reconnects after the SDK has been intentionally closed.
-        ☐ Add clear handling for missing browser APIs and initialization failures.
+        ✔ Make leader election safe when multiple tabs claim leadership at the same time.
+        ✔ Coordinate tenant and stream scopes consistently across leader and follower tabs.
+        ✔ Add explicit `close()` cleanup for timers, page listeners, BroadcastChannel, and EventSource.
+        ✔ Stop attempting reconnects after the SDK has been intentionally closed.
+        ✔ Add clear handling for missing browser APIs and initialization failures.
         ☐ Add named and default package exports that work in ESM, CommonJS, UMD, and browser CDN usage.
     Complete React integration [Frontend]:
-        ☐ Return stable React state from `usePravah` so consumers rerender when connection or SDK state becomes available.
+        ✔ Return stable React state from `usePravah` so consumers rerender when the SDK or connection state changes.
         ☐ Prevent stale event callbacks and unnecessary SDK recreation on equivalent options.
         ☐ Cover `usePravahState`, listener cleanup, reconnects, and unmount behavior with tests.
         ☐ Align the React examples with the implemented public API and returned values.
     Add automated coverage [QA]:
         ✔ Add Go unit tests for token validation, authorization, retention, identifier validation, and SSE serialization.
         ☐ Add Go integration tests for handshake, registration, publish, subscribe, replay, and health endpoints.
-        ☐ Add SDK tests for leader election, cross-tab delivery, reconnection, cleanup, and malformed messages.
-        ☐ Add tests proving the SDK keeps one active EventSource across multiple browser tabs.
+        ✔ Add SDK tests for leader election, cross-tab delivery, reconnect token refresh, and cleanup.
+        ✔ Add tests proving the SDK keeps one active EventSource across multiple browser tabs.
         ☐ Add load tests for the agreed concurrent-connection and publication targets.
         ☐ Add security tests for invalid API keys, unauthorized streams, oversized payloads, and CORS behavior.
     Finalize deployment and operations [DevOps]:

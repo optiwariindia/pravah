@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, useMemo } from 'react';
-import Pravah from './index';
+import { useEffect, useState } from 'react';
+import Pravah from './core';
 
 /**
  * usePravah Hook
@@ -10,24 +10,29 @@ import Pravah from './index';
  * @returns {Pravah|null} The Pravah SDK instance
  */
 export const usePravah = (options) => {
-    const pravahRef = useRef(null);
-    const optionsKey = useMemo(() => JSON.stringify(options), [options]);
+    const [pravah, setPravah] = useState(null);
+    const [, setConnectionRevision] = useState(0);
+    const streamsKey = JSON.stringify(options?.streams || ['global']);
 
     useEffect(() => {
-        const pravah = new Pravah(options);
-        pravahRef.current = pravah;
+        const instance = new Pravah(options);
+        const handleStateChange = () => setConnectionRevision(revision => revision + 1);
+        instance.on('statechange', handleStateChange);
+        setPravah(instance);
 
         return () => {
-            if (pravah.isLeader) {
-                pravah.closeEventSource();
-                pravah.channel.postMessage({ type: 'LEADER_CLOSED' });
-            }
-            pravah.channel.close();
-            pravahRef.current = null;
+            instance.off('statechange', handleStateChange);
+            instance.close();
+            setPravah(null);
         };
-    }, [optionsKey]);
+    }, [
+        options?.baseUrl,
+        streamsKey,
+        options?.subscriptionToken,
+        options?.getSubscriptionToken
+    ]);
 
-    return pravahRef.current;
+    return pravah;
 };
 
 /**
