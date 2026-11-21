@@ -51,7 +51,21 @@ pravah.on('bid-updated', (signal) => {
 });
 ```
 
-## 4. Server-Side Publishing
+## 4. Tenant Retention
+Each registered application has an independent replay retention configuration.
+The registration endpoint accepts an optional `retentionHours` value; otherwise
+`EVENT_RETENTION_HOURS` is used, with a default of 24 hours.
+
+Update an application's retention period through the authenticated configuration endpoint:
+
+```bash
+curl -X PUT http://localhost:3000/api/v1/config \
+     -H "Content-Type: application/json" \
+     -H "X-API-KEY: <api-key>" \
+     -d '{ "retentionHours": 72 }'
+```
+
+## 5. Server-Side Publishing
 Trigger real-time signals from your backend using the `POST /pravah/publish` endpoint.
 
 **Endpoint:** `POST /pravah/publish`
@@ -65,18 +79,21 @@ Trigger real-time signals from your backend using the `POST /pravah/publish` end
   "streamId": "project:123",
   "event": "user-login",
   "data": {
-    "id": "user-456",
-    "metadata": { "optional": "fields" }
+    "id": "user-456"
   }
 }
 ```
 
-## 5. Monitoring
+Publishing accepts only the event name, stream ID, and resource ID. Additional
+payload fields are rejected. Reconnecting clients automatically replay retained
+events by sending the standard `Last-Event-ID` header.
+
+## 6. Monitoring
 Monitor the service health and active connection metrics:
 - **Endpoint:** `GET /pravah/health`
 - **Metrics:** Active SSE connections, Database status, Uptime.
 
-## 6. Security Policy
+## 7. Security Policy
 Pravah enforces a **Signal-Only** policy. Do NOT pass sensitive data in the `data` object. Only pass the identifier (`id`) of the resource that was updated. The frontend is responsible for fetching the actual data through secure channels.
 
 ---

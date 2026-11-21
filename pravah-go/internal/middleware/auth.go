@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -12,18 +11,10 @@ import (
 
 func ValidatePublishAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Mode 1: Cookie-based
-		pravahID, err := c.Cookie("pravah_id")
-		if err == nil && pravahID != "" {
-			c.Next()
-			return
-		}
-
-		// Mode 2: API Key-based
 		apiKey := c.GetHeader("X-API-KEY")
 		if apiKey != "" {
 			var app models.App
-			err := db.Database.Collection("apps").FindOne(context.TODO(), bson.M{"apiKey": apiKey, "status": "active"}).Decode(&app)
+			err := db.Database.Collection("apps").FindOne(c.Request.Context(), bson.M{"apiKey": apiKey, "status": "active"}).Decode(&app)
 			if err == nil {
 				c.Set("appContext", app)
 				c.Next()
@@ -33,7 +24,7 @@ func ValidatePublishAuth() gin.HandlerFunc {
 
 		c.JSON(http.StatusForbidden, gin.H{
 			"error":   "Forbidden",
-			"message": "Unauthorized source. Missing pravah_id cookie or valid X-API-KEY.",
+			"message": "A valid X-API-KEY is required.",
 		})
 		c.Abort()
 	}

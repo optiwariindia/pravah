@@ -23,9 +23,9 @@ func HealthHandler(c *gin.Context) {
 	cm := core.GetClientManager()
 
 	c.JSON(http.StatusOK, gin.H{
-		"status": "ok",
-		"database": mongoStatus,
+		"status":      "ok",
+		"database":    mongoStatus,
 		"connections": cm.GetConnectionCount(),
-		"uptime": time.Since(core.StartTime).String(),
+		"uptime":      time.Since(core.StartTime).String(),
 	})
 }

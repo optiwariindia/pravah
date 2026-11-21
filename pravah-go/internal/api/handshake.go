@@ -26,6 +26,11 @@ func HandshakeHandler(c *gin.Context) {
 		"success":   true,
 		"pravah_id": pravahID,
 		"new":       isNew,
-		"message":   func() string { if isNew { return "Pravah ID initialized" }; return "Pravah ID recognized" }(),
+		"message": func() string {
+			if isNew {
+				return "Pravah ID initialized"
+			}
+			return "Pravah ID recognized"
+		}(),
 	})
 }

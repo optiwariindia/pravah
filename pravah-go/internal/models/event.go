@@ -7,8 +7,7 @@ import (
 )
 
 type EventData struct {
-	ID       string                 `bson:"id" json:"id"`
-	Metadata map[string]interface{} `bson:"metadata" json:"metadata"`
+	ID string `bson:"id" json:"id"`
 }
 
 type Event struct {
@@ -17,4 +16,5 @@ type Event struct {
 	Event     string             `bson:"event" json:"event"`
 	Data      EventData          `bson:"data" json:"data"`
 	CreatedAt time.Time          `bson:"createdAt" json:"createdAt"`
+	ExpiresAt time.Time          `bson:"expiresAt" json:"expiresAt"`
 }

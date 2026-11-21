@@ -1,5 +1,7 @@
 services:
-  pravah:
+  pravah-legacy:
+    profiles:
+      - legacy
     image: optiwariindia/pravah:0.0.1
     build:
       target: development
@@ -19,6 +21,7 @@ services:
     environment:
       - PORT=3000
       - MONGODB=mongodb://db/pravah
+      - EVENT_RETENTION_HOURS=24
     depends_on:
       - db
 

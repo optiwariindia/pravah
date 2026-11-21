@@ -10,6 +10,8 @@ class Pravah {
         this.id = null;
         this.eventSource = null;
         this.listeners = {};
+        this.eventHandlers = {};
+        this.lastEventId = null;
         
         // Multi-tab synchronization using BroadcastChannel
         this.channel = new BroadcastChannel('pravah_stream');
@@ -50,7 +52,7 @@ class Pravah {
             const { type, payload } = msg.data;
             
             if (type === 'EVENT_SIGNAL') {
-                // Received from Leader tab
+                if (payload.id) this.lastEventId = payload.id;
                 this.emit(payload.event, payload.data);
             } else if (type === 'LEADER_PING' && this.isLeader) {
                 // I am the leader, notify the new tab
@@ -60,7 +62,7 @@ class Pravah {
                 this.isLeader = false;
                 this.closeEventSource();
             } else if (type === 'LEADER_CLOSED') {
-                // Leader closed, try to become leader
+                if (payload?.id) this.lastEventId = payload.id;
                 this.manageConnection();
             }
         };
@@ -78,7 +80,7 @@ class Pravah {
         // Handle page close
         window.addEventListener('beforeunload', () => {
             if (this.isLeader) {
-                this.channel.postMessage({ type: 'LEADER_CLOSED' });
+                this.channel.postMessage({ type: 'LEADER_CLOSED', payload: { id: this.lastEventId } });
             }
         });
     }
@@ -102,45 +104,69 @@ class Pravah {
     connectSSE() {
         if (this.eventSource || !this.isLeader) return;
 
-        const url = `${this.baseUrl}/pravah/subscribe?streams=${this.streams.join(',')}`;
+        const streams = this.streams.map(encodeURIComponent).join(',');
+        const lastEventId = this.lastEventId ? `&lastEventId=${encodeURIComponent(this.lastEventId)}` : '';
+        const url = `${this.baseUrl}/pravah/subscribe?streams=${streams}${lastEventId}`;
         this.eventSource = new EventSource(url, { withCredentials: true });
 
-        /**
-         * Generic Message Handler
-         * Expects data format: { "event": "event-name", "data": { "id": "xyz" } }
-         */
-        this.eventSource.onmessage = (e) => {
+        this.attachSignalListener();
+        Object.keys(this.listeners)
+            .filter(event => event === 'connected' || event === 'heartbeat')
+            .forEach(event => this.attachEventListener(event));
+
+        this.eventSource.onerror = () => {
+            console.error('[Pravah SDK] SSE connection interrupted. The browser is reconnecting...');
+            this.emit('disconnected', { timestamp: new Date().toISOString() });
+        };
+    }
+
+    attachEventListener(event) {
+        if (!this.eventSource || this.eventHandlers[event]) return;
+
+        const handler = (e) => {
             try {
-                const payload = JSON.parse(e.data);
-                const { event, data } = payload;
-                
-                if (event) {
-                    // 1. Broadcast to other tabs
-                    this.channel.postMessage({ type: 'EVENT_SIGNAL', payload: { event, data } });
-                    // 2. Emit locally
-                    this.emit(event, data);
-                }
+                const data = JSON.parse(e.data);
+                if (e.lastEventId) this.lastEventId = e.lastEventId;
+                this.channel.postMessage({
+                    type: 'EVENT_SIGNAL',
+                    payload: { event, data, id: e.lastEventId || null }
+                });
+                this.emit(event, data);
             } catch (err) {
                 console.warn('[Pravah SDK] Received non-JSON message:', e.data);
             }
         };
 
-        this.eventSource.addEventListener('connected', (e) => {
-            console.log('[Pravah SDK] SSE Stream connected.');
-        });
+        this.eventHandlers[event] = handler;
+        this.eventSource.addEventListener(event, handler);
+    }
 
-        this.eventSource.onerror = (err) => {
-            console.error('[Pravah SDK] SSE Error. Reconnecting in 5s...');
-            this.emit('disconnected', { timestamp: new Date().toISOString() });
-            this.closeEventSource();
-            setTimeout(() => this.connectSSE(), 5000);
+    attachSignalListener() {
+        if (!this.eventSource || this.eventHandlers.signal) return;
+
+        const handler = (e) => {
+            try {
+                const payload = JSON.parse(e.data);
+                if (e.lastEventId) this.lastEventId = e.lastEventId;
+                this.channel.postMessage({
+                    type: 'EVENT_SIGNAL',
+                    payload: { event: payload.event, data: payload.data, id: e.lastEventId || null }
+                });
+                this.emit(payload.event, payload.data);
+            } catch (err) {
+                console.warn('[Pravah SDK] Received invalid signal:', e.data);
+            }
         };
+
+        this.eventHandlers.signal = handler;
+        this.eventSource.addEventListener('signal', handler);
     }
 
     closeEventSource() {
         if (this.eventSource) {
             this.eventSource.close();
             this.eventSource = null;
+            this.eventHandlers = {};
         }
     }
 
@@ -151,6 +177,9 @@ class Pravah {
     on(event, callback) {
         if (!this.listeners[event]) this.listeners[event] = [];
         this.listeners[event].push(callback);
+        if (event === 'connected' || event === 'heartbeat') {
+            this.attachEventListener(event);
+        }
         console.log(`[Pravah SDK] Listener registered for: ${event}`);
     }
 

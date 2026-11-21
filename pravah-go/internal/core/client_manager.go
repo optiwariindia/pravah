@@ -10,7 +10,13 @@ type Client struct {
 	PravahID    string
 	Streams     map[string]struct{}
 	ConnectedAt time.Time
-	Signal      chan string
+	Signal      chan Signal
+}
+
+type Signal struct {
+	ID    string
+	Event string
+	Data  map[string]interface{}
 }
 
 type ClientManager struct {
@@ -44,7 +50,7 @@ func (cm *ClientManager) AddClient(connectionID, pravahID string, streams map[st
 		PravahID:    pravahID,
 		Streams:     streams,
 		ConnectedAt: time.Now(),
-		Signal:      make(chan string, 10), // Buffered channel
+		Signal:      make(chan Signal, 10),
 	}
 	cm.clients[connectionID] = client
 	return client

@@ -15,6 +15,7 @@ Pravah solves these issues through a specialized architecture:
 -   **Multi-Tab Synchronization:** A smart SDK that uses Leader Election to maintain only **ONE** active SSE connection per browser.
 -   **Signal-Only Policy:** Pravah broadcasts minimalist "Signals" (Event Name + Resource ID). Sensitive data is fetched via your existing secure REST APIs.
 -   **Go Engine (v1.0.0):** A compiled, scratch-based backend that handles thousands of concurrent streams with minimal CPU and memory.
+-   **Reliable Replay:** Tenant-configurable retention replays missed SSE events through `Last-Event-ID`.
 
 ## ✨ Key Features
 -   ✅ **High-Performance Go Backend:** Built with Go 1.25 for speed and safety.
@@ -55,6 +56,17 @@ const MyComponent = () => {
     );
 };
 ```
+
+## 🧪 Run locally
+
+The Go service is the supported backend:
+
+```bash
+docker compose up --build pravah-go db
+```
+
+The legacy Node implementation is disabled by default. It can be started
+explicitly with `docker compose --profile legacy up pravah-legacy`.
 
 ## 🤝 Community & Contribution
 Pravah is currently in its **Refinement Phase**. We are actively looking for developers to use, break, and help us improve the system.

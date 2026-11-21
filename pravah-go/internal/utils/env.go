@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"fmt"
+	"errors"
 	"os"
 	"strings"
 )
@@ -30,7 +30,7 @@ func CheckEnvironmentVariables() error {
 		msg += " " + missingEnv[0] + " is missing."
 	}
 
-	return fmt.Errorf(msg)
+	return errors.New(msg)
 }
 
 func joinWithAnd(list []string) string {

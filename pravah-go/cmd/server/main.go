@@ -64,6 +64,8 @@ func main() {
 	apiV1 := r.Group("/api/v1")
 	{
 		apiV1.PUT("/register", api.RegisterAppHandler)
+		apiV1.GET("/config", middleware.ValidatePublishAuth(), api.GetAppConfigHandler)
+		apiV1.PUT("/config", middleware.ValidatePublishAuth(), api.UpdateAppConfigHandler)
 	}
 
 	log.Printf("Server started on port %s", port)

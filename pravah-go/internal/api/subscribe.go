@@ -6,12 +6,18 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sampledge-sse/pravah-go/internal/core"
+	"github.com/sampledge-sse/pravah-go/internal/db"
+	"github.com/sampledge-sse/pravah-go/internal/models"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func SubscribeHandler(c *gin.Context) {
@@ -30,10 +36,36 @@ func SubscribeHandler(c *gin.Context) {
 	streams := make(map[string]struct{})
 	if streamsParam != "" {
 		for _, s := range strings.Split(streamsParam, ",") {
-			streams[strings.TrimSpace(s)] = struct{}{}
+			stream := strings.TrimSpace(s)
+			if stream != "" {
+				streams[stream] = struct{}{}
+			}
 		}
-	} else {
+	}
+	if len(streams) == 0 {
 		streams["global"] = struct{}{}
+	}
+
+	lastEventID := c.GetHeader("Last-Event-ID")
+	if lastEventID == "" {
+		lastEventID = c.Query("lastEventId")
+	}
+	if lastEventID != "" {
+		if _, err := primitive.ObjectIDFromHex(lastEventID); err != nil {
+			badRequest(c, "Last-Event-ID must be a valid event identifier.")
+			return
+		}
+	}
+
+	client := core.GetClientManager().AddClient(connectionID, pravahID, streams)
+	defer core.GetClientManager().RemoveClient(connectionID)
+	defer log.Printf("[Pravah] Stream Closed: %s (User: %s)", connectionID, pravahID)
+
+	replay, err := loadReplayEvents(c, streams, lastEventID)
+	if err != nil {
+		log.Printf("[Pravah] Replay query failed: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Unable to replay missed events."})
+		return
 	}
 
 	// Set SSE Headers
@@ -44,48 +76,52 @@ func SubscribeHandler(c *gin.Context) {
 
 	// Send Initial Connection Data
 	initData := map[string]interface{}{
-		"event": "connected",
-		"data": map[string]interface{}{
-			"connectionId": connectionID,
-			"pravahId":     pravahID,
-			"streams":      getKeys(streams),
-			"timestamp":    time.Now().Format(time.RFC3339),
-		},
+		"connectionId": connectionID,
+		"pravahId":     pravahID,
+		"streams":      getKeys(streams),
+		"timestamp":    time.Now().Format(time.RFC3339),
 	}
-	data, _ := json.Marshal(initData)
-	fmt.Fprintf(c.Writer, "data: %s\n\n", data)
+	if err := writeSSEEvent(c.Writer, "", "connected", initData); err != nil {
+		return
+	}
 	c.Writer.Flush()
-
-	// Register in ClientManager
-	client := core.GetClientManager().AddClient(connectionID, pravahID, streams)
 
 	log.Printf("[Pravah] Stream Opened: %s (User: %s) Streams: %s", connectionID, pravahID, strings.Join(getKeys(streams), ", "))
 
-	// Create a channel for heartbeats
+	replayedThrough := ""
+	for _, signal := range replay {
+		if err := writeSignalEvent(c.Writer, signal); err != nil {
+			return
+		}
+		replayedThrough = signal.ID
+		c.Writer.Flush()
+	}
+
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 
 	c.Stream(func(w io.Writer) bool {
 		select {
 		case msg := <-client.Signal:
-			fmt.Fprintf(w, "data: %s\n\n", msg)
+			if replayedThrough != "" && msg.ID <= replayedThrough {
+				return true
+			}
+			if err := writeSignalEvent(w, msg); err != nil {
+				return false
+			}
 			return true
 		case <-ticker.C:
 			heartbeat := map[string]interface{}{
-				"event": "heartbeat",
-				"data":  map[string]interface{}{"timestamp": time.Now().Format(time.RFC3339)},
+				"timestamp": time.Now().Format(time.RFC3339),
 			}
-			data, _ := json.Marshal(heartbeat)
-			fmt.Fprintf(w, "data: %s\n\n", data)
+			if err := writeSSEEvent(w, "", "heartbeat", heartbeat); err != nil {
+				return false
+			}
 			return true
 		case <-c.Request.Context().Done():
-			core.GetClientManager().RemoveClient(connectionID)
-			log.Printf("[Pravah] Stream Closed: %s (User: %s)", connectionID, pravahID)
 			return false
 		}
 	})
-	
-	_ = client // client is stored in manager, we might use it for direct writes if we didn't use c.Stream
 }
 
 func getKeys(m map[string]struct{}) []string {
@@ -93,5 +129,71 @@ func getKeys(m map[string]struct{}) []string {
 	for k := range m {
 		keys = append(keys, k)
 	}
+	sort.Strings(keys)
 	return keys
+}
+
+func loadReplayEvents(c *gin.Context, streams map[string]struct{}, lastEventID string) ([]core.Signal, error) {
+	if lastEventID == "" {
+		return nil, nil
+	}
+
+	lastID, err := primitive.ObjectIDFromHex(lastEventID)
+	if err != nil {
+		return nil, err
+	}
+
+	filter := bson.M{
+		"_id":       bson.M{"$gt": lastID},
+		"streamId":  bson.M{"$in": getKeys(streams)},
+		"expiresAt": bson.M{"$gt": time.Now()},
+	}
+	cursor, err := db.Database.Collection("events").Find(
+		c.Request.Context(),
+		filter,
+		options.Find().SetSort(bson.D{{Key: "_id", Value: 1}}),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(c.Request.Context())
+
+	var events []models.Event
+	if err := cursor.All(c.Request.Context(), &events); err != nil {
+		return nil, err
+	}
+
+	signals := make([]core.Signal, 0, len(events))
+	for _, event := range events {
+		signals = append(signals, core.Signal{
+			ID:    event.ID.Hex(),
+			Event: event.Event,
+			Data: map[string]interface{}{
+				"id":        event.Data.ID,
+				"timestamp": event.CreatedAt.Format(time.RFC3339),
+			},
+		})
+	}
+	return signals, nil
+}
+
+func writeSSEEvent(w io.Writer, id, event string, data interface{}) error {
+	payload, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	if id != "" {
+		if _, err := fmt.Fprintf(w, "id: %s\n", id); err != nil {
+			return err
+		}
+	}
+	_, err = fmt.Fprintf(w, "event: %s\ndata: %s\n\n", event, payload)
+	return err
+}
+
+func writeSignalEvent(w io.Writer, signal core.Signal) error {
+	return writeSSEEvent(w, signal.ID, "signal", map[string]interface{}{
+		"event": signal.Event,
+		"data":  signal.Data,
+	})
 }
