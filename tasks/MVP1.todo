@@ -26,7 +26,7 @@ Pravah MVP1 Tasks:
         ✔ Allow live publishing to continue when persistence is unavailable, with explicit degraded-mode signaling.
         ✔ Return health status that reflects database availability without misreporting a degraded service as healthy.
     Harden connection management [Backend]:
-        ☐ Remove disconnected clients from the registry on every shutdown and error path.
+        ✔ Remove disconnected clients from the registry on every shutdown and error path.
         ✔ Add configurable heartbeat, client-buffer, stream, replay, and request-size limits.
         ✔ Close clients whose buffers are full instead of silently dropping events.
         ☐ Add structured logs for connection open/close, authentication failures, publish failures, replay, and dropped delivery.
@@ -49,7 +49,7 @@ Pravah MVP1 Tasks:
         ☐ Align the React examples with the implemented public API and returned values.
     Add automated coverage [QA]:
         ✔ Add Go unit tests for token validation, authorization, retention, identifier validation, and SSE serialization.
-        ☐ Add Go integration tests for handshake, registration, publish, subscribe, replay, and health endpoints.
+        ✔ Add Go integration tests for handshake, registration, publish, subscribe, replay, tenant isolation, cleanup, and health endpoints.
         ✔ Add SDK tests for leader election, cross-tab delivery, reconnect token refresh, and cleanup.
         ✔ Add tests proving the SDK keeps one active EventSource across multiple browser tabs.
         ☐ Add load tests for the agreed concurrent-connection and publication targets.

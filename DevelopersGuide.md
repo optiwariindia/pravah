@@ -129,12 +129,27 @@ The publish response includes `persisted` and `replayable`. If MongoDB is
 temporarily unavailable, accepted signals are delivered live with both fields
 set to `false`.
 
-## 6. Monitoring
+## 6. Integration Tests
+
+MongoDB API integration tests are opt-in and run on the Compose network without
+publishing database or service ports:
+
+```bash
+export SUBSCRIPTION_JWT_SECRET="$(openssl rand -hex 32)"
+export ADMIN_API_KEY="$(openssl rand -hex 32)"
+docker compose up -d db
+docker run --rm --network pravah_default \
+  -e PRAVAH_MONGODB_TEST_URI=mongodb://db:27017 \
+  -v "$PWD/pravah-go:/app" -w /app golang:1.25-alpine \
+  go test ./internal/api -run TestMongoIntegration -count=1 -v
+```
+
+## 7. Monitoring
 Monitor the service health and active connection metrics:
 - **Endpoint:** `GET /pravah/health`
 - **Metrics:** Active SSE connections, Database status, Uptime.
 
-## 7. Security Policy
+## 8. Security Policy
 Pravah enforces a **Signal-Only** policy. Do NOT pass sensitive data in the `data` object. Only pass the identifier (`id`) of the resource that was updated. The frontend is responsible for fetching the actual data through secure channels.
 
 ---
