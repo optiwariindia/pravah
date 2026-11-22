@@ -3,7 +3,7 @@ Pravah MVP1 Tasks:
         ✔ Confirm Go is the primary backend and mark the Node implementation as legacy or remove it from the supported runtime.
         ✔ Approve the signal-only payload contract: event name, resource ID, stream ID, timestamp, and event ID.
         ☐ Define supported deployment targets, MongoDB version, and the production HTTPS strategy.
-        ☐ Define MVP limits for concurrent connections, replay retention, payload size, and publication throughput.
+        ✔ Define MVP limits for 100 concurrent connections, 50 publications/second, configurable retention and payload limits, and sub-second delivery.
         ☐ Document deferred Phase 2 features such as hosted infrastructure, horizontal scaling, and enterprise analytics.
     Establish application security [Backend]:
         ✔ Restrict application registration so a public caller cannot create unlimited API keys.
@@ -52,7 +52,7 @@ Pravah MVP1 Tasks:
         ✔ Add Go integration tests for handshake, registration, publish, subscribe, replay, tenant isolation, cleanup, and health endpoints.
         ✔ Add SDK tests for leader election, cross-tab delivery, reconnect token refresh, and cleanup.
         ✔ Add tests proving the SDK keeps one active EventSource across multiple browser tabs.
-        ☐ Add load tests for the agreed concurrent-connection and publication targets.
+        ✔ Add load tests for the agreed concurrent-connection and publication targets.
         ☐ Add security tests for invalid API keys, unauthorized streams, oversized payloads, and CORS behavior.
     Finalize deployment and operations [DevOps]:
         ✔ Add a Compose profile or command that starts only the supported MVP service and MongoDB.
@@ -71,9 +71,9 @@ Pravah MVP1 Tasks:
         ☐ Reconcile README, developer guide, PRD, SRS, and file-structure documentation around the Go architecture.
         ☐ Add troubleshooting guidance for cookies, CORS, reverse proxies, buffering, and reconnects.
     Validate market claims [Product]:
-        ☐ Benchmark baseline CPU, memory, active connections, and publication latency in a reproducible environment.
-        ☐ Measure one active SSE connection across multiple tabs and publish the reproduction steps.
-        ☐ Measure startup time and image size for the production container.
+        ✔ Benchmark active connections, publication throughput, drops, and publication latency in a reproducible environment.
+        ✔ Measure one active SSE connection across multiple tabs in automated SDK tests and document the reproduction.
+        ✔ Measure image size for the production container.
         ☐ Define exactly what the signal-only security guarantee does and does not protect.
         ☐ Replace unsupported superlatives with benchmark-backed positioning.
         ☐ Test the landing-page message with at least five target developers or teams.

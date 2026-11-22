@@ -152,5 +152,23 @@ Monitor the service health and active connection metrics:
 ## 8. Security Policy
 Pravah enforces a **Signal-Only** policy. Do NOT pass sensitive data in the `data` object. Only pass the identifier (`id`) of the resource that was updated. The frontend is responsible for fetching the actual data through secure channels.
 
+## 9. Load Validation
+
+The MVP load target is 100 concurrent SSE connections, 50 publications per
+second, zero dropped connected signals, and p95 observer latency below one
+second. Run the reproducible test on the Compose network:
+
+```bash
+export SUBSCRIPTION_JWT_SECRET="$(openssl rand -hex 32)"
+export ADMIN_API_KEY="$(openssl rand -hex 32)"
+docker compose up -d --build db pravah-go
+IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' pravah-pravah-go-1)
+docker run --rm --network pravah_default \
+  -e PRAVAH_URL="http://pravah-go:3000" \
+  -e ADMIN_API_KEY="$ADMIN_API_KEY" \
+  -v "$PWD/pravah-go:/app" -w /app golang:1.25-alpine \
+  go run ./cmd/loadtest
+```
+
 ---
 **Lead Engineer:** Om Prakash Tiwari
