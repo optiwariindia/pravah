@@ -14,7 +14,7 @@ Modern web applications face major challenges when implementing real-time featur
 Pravah solves these issues through a specialized architecture:
 -   **Multi-Tab Synchronization:** A smart SDK that uses Leader Election to maintain only **ONE** active SSE connection per browser.
 -   **Signal-Only Policy:** Pravah broadcasts minimalist "Signals" (Event Name + Resource ID). Sensitive data is fetched via your existing secure REST APIs.
--   **Go Engine (v1.0.0):** A compiled, scratch-based backend validated with 100 concurrent clients at 50 publications per second.
+-   **Go Engine (v1.0.1):** A compiled, scratch-based backend validated with 100 concurrent clients at 50 publications per second.
 -   **Reliable Replay:** Tenant-configurable retention replays missed SSE events through `Last-Event-ID`.
 
 ## ✨ Key Features

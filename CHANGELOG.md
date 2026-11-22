@@ -3,7 +3,7 @@
 Pravah follows semantic versioning. Backend/container and SDK releases are
 versioned independently; this changelog groups related release work.
 
-## Unreleased
+## Backend 1.0.1 - 2026-11-22
 
 ### Added
 
@@ -25,14 +25,22 @@ versioned independently; this changelog groups related release work.
 - Sanitized internal API errors and token-redacted access logs.
 - Bounded request, replay, stream, and client-buffer sizes.
 
-## 1.0.0 - Initial
+## SDK 1.1.1 - 2026-11-22
+
+- Added verified CommonJS, ESM, UMD, and CDN exports.
+- Added TypeScript declarations and publishable package checks.
+- Added generic `signal` events for playground and framework integrations.
+- Improved React hook lifecycle and stale callback handling.
+- Added tenant-aware leader channels and token-refresh reconnect coverage.
+
+## Backend 1.0.0 - Initial
 
 - Initial Go and legacy Node services.
 - MongoDB event storage.
 - SSE publishing and subscription endpoints.
 - JavaScript and React integration experiments.
 
-## SDK 1.1.0
+## SDK 1.1.0 - Initial
 
 - Core JavaScript SDK and React hooks.
 - Multi-tab leader election using `BroadcastChannel`.

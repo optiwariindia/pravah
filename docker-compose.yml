@@ -14,7 +14,7 @@ services:
       - ./pravah:/pravah
       - /pravah/node_modules
   pravah-go:
-    image: optiwariindia/pravah-go:1.0.0
+    image: optiwariindia/pravah-go:1.0.1
     build:
       context: ./pravah-go
     restart: unless-stopped
