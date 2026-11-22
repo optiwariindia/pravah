@@ -73,6 +73,15 @@ persistent data directory:
 MONGODB_DATA_PATH=/srv/pravah/mongodb docker compose up -d db pravah-go
 ```
 
+Run the complete first-event quickstart:
+
+```bash
+bash scripts/quickstart.sh
+```
+
+The OpenAPI contract is served at `/openapi.yaml` and stored at
+[pravah-go/openapi.yaml](pravah-go/openapi.yaml).
+
 The legacy Node implementation is disabled by default. It can be started
 explicitly with `docker compose --profile legacy up pravah-legacy`.
 

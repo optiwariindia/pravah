@@ -63,8 +63,8 @@ Pravah MVP1 Tasks:
         ☐ Add release versioning and changelog conventions across the service and SDK.
         ☐ Document backup, retention, secret rotation, upgrade, and rollback procedures.
     Improve developer experience [Developer Experience]:
-        ☐ Publish a focused OpenAPI specification for registration, health, publishing, and subscription.
-        ☐ Add a copy-paste quickstart that starts Pravah, registers an app, publishes a signal, and displays it in a browser.
+        ✔ Publish a focused OpenAPI specification for registration, health, publishing, and subscription.
+        ✔ Add a copy-paste quickstart that starts Pravah, registers an app, publishes a signal, and displays it.
         ☐ Add a local playground showing connection status, active streams, and incoming signals.
         ☐ Publish `pravah-sdk` to npm with verified package metadata and supported-runtime documentation.
         ☐ Provide React, vanilla JavaScript, curl, Go, and Node publishing examples.

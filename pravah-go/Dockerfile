@@ -36,6 +36,7 @@ WORKDIR /app
 # We use the numeric UID (100) for security and to avoid looking up names in /etc/passwd
 COPY --from=builder --chown=pravah:pravah /app/server .
 COPY --from=builder --chown=pravah:pravah /app/public ./public
+COPY --from=builder --chown=pravah:pravah /app/openapi.yaml .
 
 # Use the non-root user
 USER pravah

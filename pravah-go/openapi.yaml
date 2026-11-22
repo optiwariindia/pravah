@@ -1,0 +1,336 @@
+openapi: 3.0.3
+info:
+  title: Pravah API
+  version: 1.0.0
+  description: Self-hosted SSE signal delivery with tenant-scoped authorization and replay.
+servers:
+  - url: http://pravah-go:3000
+    description: Docker Compose internal network
+paths:
+  /pravah/init:
+    get:
+      summary: Initialize a browser identity cookie
+      operationId: initializeBrowser
+      responses:
+        '200':
+          description: Browser identity initialized or recognized
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+  /pravah/health:
+    get:
+      summary: Report database, live delivery, replay, and connection health
+      operationId: getHealth
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+        '503':
+          description: Degraded but live delivery remains available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+  /pravah/subscribe:
+    get:
+      summary: Subscribe to an authorized stream
+      operationId: subscribe
+      security:
+        - browserCookie: []
+      parameters:
+        - name: streams
+          in: query
+          required: true
+          schema:
+            type: string
+            example: project:123,user:456
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Short-lived subscription token
+        - name: lastEventId
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{24}$'
+        - name: Last-Event-ID
+          in: header
+          required: false
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{24}$'
+      responses:
+        '200':
+          description: Server-Sent Events stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+              examples:
+                signal:
+                  value: |
+                    id: 507f1f77bcf86cd799439011
+                    event: signal
+                    data: {"event":"bid-updated","data":{"id":"bid-123","timestamp":"2026-11-22T00:00:00Z"}}
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '410':
+          description: Replay window exceeded; refresh application state
+        '503':
+          description: Replay is unavailable during a MongoDB outage
+  /pravah/publish:
+    post:
+      summary: Publish a signal-only event
+      operationId: publishSignal
+      security:
+        - appApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishRequest'
+      responses:
+        '202':
+          description: Event accepted for live delivery
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/register:
+    put:
+      summary: Register an application tenant
+      operationId: registerApplication
+      security:
+        - adminKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Application and tenant configuration created
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/subscriptions/token:
+    post:
+      summary: Issue a short-lived stream subscription token
+      operationId: issueSubscriptionToken
+      security:
+        - appApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionTokenRequest'
+      responses:
+        '201':
+          description: Signed token issued
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/v1/config:
+    get:
+      summary: Read tenant replay retention
+      operationId: getTenantConfig
+      security:
+        - appApiKey: []
+      responses:
+        '200':
+          description: Tenant configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppConfigResponse'
+    put:
+      summary: Update tenant replay retention
+      operationId: updateTenantConfig
+      security:
+        - appApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppConfigRequest'
+      responses:
+        '200':
+          description: Tenant configuration updated
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+components:
+  securitySchemes:
+    appApiKey:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+    adminKey:
+      type: apiKey
+      in: header
+      name: X-ADMIN-KEY
+    browserCookie:
+      type: apiKey
+      in: cookie
+      name: pravah_id
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Authentication is valid but not authorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Success:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+    Error:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+    Health:
+      type: object
+      required: [status, database, liveDelivery, replay, connections, uptime]
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded]
+        database:
+          type: string
+          enum: [connected, disconnected]
+        liveDelivery:
+          type: boolean
+        replay:
+          type: boolean
+        connections:
+          type: integer
+          minimum: 0
+        uptime:
+          type: string
+    PublishRequest:
+      type: object
+      additionalProperties: false
+      required: [streamId, event, data]
+      properties:
+        streamId:
+          type: string
+          maxLength: 128
+        event:
+          type: string
+          maxLength: 128
+        data:
+          type: object
+          additionalProperties: false
+          required: [id]
+          properties:
+            id:
+              type: string
+              maxLength: 128
+    PublishResponse:
+      type: object
+      required: [success, count, eventId, persisted, replayable]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        count:
+          type: integer
+          minimum: 0
+        eventId:
+          type: string
+        persisted:
+          type: boolean
+        replayable:
+          type: boolean
+    RegisterRequest:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name:
+          type: string
+        retentionHours:
+          type: integer
+          minimum: 1
+          maximum: 8760
+    SubscriptionTokenRequest:
+      type: object
+      additionalProperties: false
+      required: [streams]
+      properties:
+        streams:
+          type: array
+          minItems: 1
+          maxItems: 32
+          items:
+            type: string
+        subject:
+          type: string
+          maxLength: 128
+        expiresIn:
+          type: integer
+          minimum: 1
+          maximum: 3600
+          default: 900
+    AppConfigRequest:
+      type: object
+      additionalProperties: false
+      required: [retentionHours]
+      properties:
+        retentionHours:
+          type: integer
+          minimum: 1
+          maximum: 8760
+    AppConfigResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/AppConfigRequest'

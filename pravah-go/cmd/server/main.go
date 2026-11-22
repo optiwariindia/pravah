@@ -72,6 +72,7 @@ func main() {
 	r.Static("/public", "./public")
 	r.StaticFile("/test.html", "./public/test.html")
 	r.StaticFile("/register.html", "./public/register.html")
+	r.StaticFile("/openapi.yaml", "./openapi.yaml")
 	r.Static("/js", "./public/js")
 	r.Static("/css", "./public/css")
 	r.Static("/fonts", "./public/fonts")
