@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sampledge-sse/pravah-go/internal/db"
+	"github.com/sampledge-sse/pravah-go/internal/metrics"
 	"github.com/sampledge-sse/pravah-go/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -61,6 +62,7 @@ func ValidatePublishAuth() gin.HandlerFunc {
 			"error":   "Forbidden",
 			"message": "A valid X-API-KEY is required.",
 		})
+		metrics.AuthenticationFailure()
 		c.Abort()
 	}
 }
@@ -82,6 +84,7 @@ func ValidateAdminAuth() gin.HandlerFunc {
 			"error":   "Forbidden",
 			"message": "A valid X-ADMIN-KEY is required.",
 		})
+		metrics.AuthenticationFailure()
 		c.Abort()
 	}
 }

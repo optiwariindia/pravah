@@ -147,6 +147,7 @@ docker run --rm --network pravah_default \
 ## 7. Monitoring
 Monitor the service health and active connection metrics:
 - **Endpoint:** `GET /pravah/health`
+- **Operational counters:** `GET /pravah/metrics`
 - **Metrics:** Active SSE connections, Database status, Uptime.
 
 ## 8. Security Policy

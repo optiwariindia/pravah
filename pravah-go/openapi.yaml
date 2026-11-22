@@ -39,6 +39,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Health'
+  /pravah/metrics:
+    get:
+      summary: Read in-memory operational counters
+      operationId: getMetrics
+      responses:
+        '200':
+          description: Operational counters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metrics'
   /pravah/subscribe:
     get:
       summary: Subscribe to an authorized stream
@@ -252,6 +263,35 @@ components:
           minimum: 0
         uptime:
           type: string
+    Metrics:
+      type: object
+      required: [metrics]
+      properties:
+        metrics:
+          type: object
+          properties:
+            activeConnections:
+              type: integer
+            connectionsOpened:
+              type: integer
+            connectionsClosed:
+              type: integer
+            signalsPublished:
+              type: integer
+            signalsDelivered:
+              type: integer
+            signalsDropped:
+              type: integer
+            replayEvents:
+              type: integer
+            replayErrors:
+              type: integer
+            authenticationFailures:
+              type: integer
+            persistenceFailures:
+              type: integer
+            averagePublicationMs:
+              type: number
     PublishRequest:
       type: object
       additionalProperties: false

@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -27,6 +28,7 @@ func main() {
 	if *healthcheck {
 		os.Exit(runHealthcheck())
 	}
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
 
 	// Validate environment variables
 	if err := utils.CheckEnvironmentVariables(); err != nil {
@@ -87,6 +89,7 @@ func main() {
 	{
 		pravah.GET("/init", api.HandshakeHandler)
 		pravah.GET("/health", api.HealthHandler)
+		pravah.GET("/metrics", api.MetricsHandler)
 		pravah.GET("/subscribe", api.SubscribeHandler)
 		pravah.POST("/publish", middleware.ValidatePublishAuth(), api.PublishHandler)
 	}

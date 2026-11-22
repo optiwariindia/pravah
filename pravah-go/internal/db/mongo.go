@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"log"
+	"log/slog"
 	"sync/atomic"
 	"time"
 
@@ -77,7 +78,7 @@ func EnsureIndexes() {
 		},
 	}
 	if _, err := Database.Collection("events").Indexes().CreateMany(ctx, eventIndexes); err != nil {
-		log.Printf("Failed to create event indexes: %v", err)
+		slog.Error("failed to create event indexes", "error", err)
 		return
 	}
 
@@ -86,7 +87,7 @@ func EnsureIndexes() {
 		Options: options.Index().SetUnique(true).SetName("tenant_app_id"),
 	}
 	if _, err := Database.Collection("app_configs").Indexes().CreateOne(ctx, configIndex); err != nil {
-		log.Printf("Failed to create app config indexes: %v", err)
+		slog.Error("failed to create app config indexes", "error", err)
 		return
 	}
 	indexesReady.Store(true)

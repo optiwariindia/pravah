@@ -4,6 +4,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/sampledge-sse/pravah-go/internal/metrics"
 	"github.com/sampledge-sse/pravah-go/internal/utils"
 )
 
@@ -93,13 +94,17 @@ func (cm *ClientManager) AddClient(connectionID, appID, pravahID string, streams
 		Done:        make(chan struct{}),
 	}
 	cm.clients[connectionID] = client
+	metrics.ConnectionOpened()
 	return client
 }
 
 func (cm *ClientManager) RemoveClient(connectionID string) {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
-	delete(cm.clients, connectionID)
+	if _, exists := cm.clients[connectionID]; exists {
+		delete(cm.clients, connectionID)
+		metrics.ConnectionClosed()
+	}
 }
 
 func (cm *ClientManager) CloseAll(reason string) {

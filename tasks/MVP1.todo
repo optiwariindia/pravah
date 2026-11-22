@@ -29,8 +29,8 @@ Pravah MVP1 Tasks:
         ✔ Remove disconnected clients from the registry on every shutdown and error path.
         ✔ Add configurable heartbeat, client-buffer, stream, replay, and request-size limits.
         ✔ Close clients whose buffers are full instead of silently dropping events.
-        ☐ Add structured logs for connection open/close, authentication failures, publish failures, replay, and dropped delivery.
-        ☐ Add metrics for active connections, publications, delivery latency, replay count, and delivery failures.
+        ✔ Add structured logs for connection open/close, authentication failures, publish failures, replay, and dropped delivery.
+        ✔ Add metrics for active connections, publications, publication latency, replay count, and delivery failures.
         ☐ Verify concurrent publish and client removal are safe under load.
     Complete the browser SDK [SDK]:
         ✔ Remove the circular dependency between the core SDK and React hooks.

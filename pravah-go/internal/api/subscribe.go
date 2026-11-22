@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"sort"
 	"strings"
@@ -16,6 +16,7 @@ import (
 	"github.com/sampledge-sse/pravah-go/internal/auth"
 	"github.com/sampledge-sse/pravah-go/internal/core"
 	"github.com/sampledge-sse/pravah-go/internal/db"
+	"github.com/sampledge-sse/pravah-go/internal/metrics"
 	"github.com/sampledge-sse/pravah-go/internal/models"
 	"github.com/sampledge-sse/pravah-go/internal/utils"
 	"go.mongodb.org/mongo-driver/bson"
@@ -84,10 +85,10 @@ func SubscribeHandler(c *gin.Context) {
 
 	client := core.GetClientManager().AddClient(connectionID, claims.AppID, pravahID, streams)
 	defer core.GetClientManager().RemoveClient(connectionID)
-	defer log.Printf("[Pravah] Stream Closed: %s (User: %s)", connectionID, pravahID)
 
 	replay, err := loadReplayEvents(c, claims.AppID, streams, lastEventID)
 	if err != nil {
+		metrics.ReplayError()
 		if !db.IsHealthy() && lastEventID != "" {
 			c.JSON(http.StatusServiceUnavailable, gin.H{
 				"error":   "Replay Unavailable",
@@ -102,7 +103,7 @@ func SubscribeHandler(c *gin.Context) {
 			})
 			return
 		}
-		log.Printf("[Pravah] Replay query failed: %v", err)
+		slog.Error("replay query failed", "connectionId", connectionID, "appId", claims.AppID, "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Unable to replay missed events."})
 		return
 	}
@@ -126,7 +127,8 @@ func SubscribeHandler(c *gin.Context) {
 	}
 	c.Writer.Flush()
 
-	log.Printf("[Pravah] Stream Opened: %s (User: %s) Streams: %s", connectionID, pravahID, strings.Join(getKeys(streams), ", "))
+	metrics.Replay(uint64(len(replay)))
+	slog.Info("stream opened", "connectionId", connectionID, "userId", pravahID, "appId", claims.AppID, "streams", getKeys(streams))
 
 	replayedThrough := ""
 	for _, signal := range replay {
@@ -151,7 +153,7 @@ func SubscribeHandler(c *gin.Context) {
 			}
 			return true
 		case <-client.Done:
-			log.Printf("[Pravah] Stream Closed: %s (Reason: %s)", connectionID, client.CloseReason())
+			slog.Info("stream closed", "connectionId", connectionID, "reason", client.CloseReason())
 			return false
 		case <-ticker.C:
 			heartbeat := map[string]interface{}{
@@ -162,6 +164,7 @@ func SubscribeHandler(c *gin.Context) {
 			}
 			return true
 		case <-c.Request.Context().Done():
+			slog.Info("stream closed", "connectionId", connectionID, "reason", "request_done")
 			return false
 		}
 	})

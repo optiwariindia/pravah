@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"net/http"
 	"regexp"
 	"time"
@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sampledge-sse/pravah-go/internal/core"
 	"github.com/sampledge-sse/pravah-go/internal/db"
+	"github.com/sampledge-sse/pravah-go/internal/metrics"
 	"github.com/sampledge-sse/pravah-go/internal/models"
 	"github.com/sampledge-sse/pravah-go/internal/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -24,6 +25,7 @@ type PublishRequest struct {
 var identifierPattern = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9:._/-]{0,127}$`)
 
 func PublishHandler(c *gin.Context) {
+	startedAt := time.Now()
 	var req PublishRequest
 	if err := decodeStrictJSON(c, &req); err != nil {
 		badRequest(c, "A valid JSON signal with streamId, event, and data.id is required; metadata is not accepted.")
@@ -44,7 +46,7 @@ func PublishHandler(c *gin.Context) {
 	config, err := getAppConfig(c.Request.Context(), app.AppID)
 	if err != nil {
 		db.MarkUnhealthy()
-		log.Printf("[Pravah] Tenant config unavailable; using default retention for live delivery: %v", err)
+		slog.Error("tenant config unavailable; using default retention", "appId", app.AppID, "error", err)
 		config = models.AppConfig{
 			AppID:          app.AppID,
 			RetentionHours: utils.EventRetentionHours(),
@@ -68,7 +70,7 @@ func PublishHandler(c *gin.Context) {
 	persisted := err == nil
 	if err != nil {
 		db.MarkUnhealthy()
-		log.Printf("[Pravah] Persistence unavailable; publishing live-only signal: %v", err)
+		slog.Warn("persistence unavailable; publishing live-only signal", "appId", app.AppID, "eventId", event.ID.Hex(), "error", err)
 	}
 
 	// 3. Broadcast
@@ -84,14 +86,17 @@ func PublishHandler(c *gin.Context) {
 	}
 
 	delivered := 0
+	dropped := uint64(0)
 	for _, client := range clients {
 		if client.Enqueue(signal) {
 			delivered++
 		} else {
-			log.Printf("[Pravah] Client %s closed: %s", client.ID, client.CloseReason())
+			dropped++
+			slog.Warn("client closed during delivery", "clientId", client.ID, "reason", client.CloseReason())
 		}
 	}
 
+	metrics.Publication(time.Since(startedAt).Nanoseconds(), 1, uint64(delivered), dropped, !persisted)
 	c.JSON(http.StatusAccepted, gin.H{
 		"success":    true,
 		"message":    "Event published",
