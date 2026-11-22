@@ -126,15 +126,15 @@ docker-compose up -d</code></pre>
         <h2>Why Go?</h2>
         <p>The core engine is built with <strong>Go 1.25</strong> and packaged as a <code>scratch</code> image. This means:</p>
         <ul>
-            <li><strong>Tiny Footprint:</strong> Image size is less than 20MB.</li>
-            <li><strong>Hardened Security:</strong> No OS, no shell, no vulnerabilities.</li>
-            <li><strong>High Concurrency:</strong> Handles thousands of streams using Go Routines efficiently.</li>
+            <li><strong>Compact Image:</strong> Measured production image size is approximately 26.6MB.</li>
+            <li><strong>Reduced Runtime Surface:</strong> The final image has no OS package manager or shell.</li>
+            <li><strong>Validated Concurrency:</strong> Tested with 100 simultaneous connections at 50 publications per second.</li>
         </ul>
     </section>
 </div>
 
 <footer>
-    <p>Pravah &copy; 2026. Lead Engineer: Sanket.</p>
+    <p>Pravah &copy; 2026. Lead Engineer: Om Prakash Tiwari.</p>
     <p>Built for the open-source community. Refine. Scale. Flow.</p>
 </footer>
 

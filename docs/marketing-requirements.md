@@ -5,7 +5,7 @@ This document outlines the strategic requirements to transform **Pravah** from a
 ---
 
 ## 1. 🎯 Market Positioning
-**Value Proposition:** "Pravah is the world's most resource-efficient real-time engine, optimizing browser resources by synchronizing multiple tabs into a single server connection."
+**Value Proposition:** "Pravah is a lightweight, self-hosted SSE service that shares one browser connection across tabs and delivers secure resource-update signals."
 
 **Target Audience:**
 *   SaaS Platforms with complex dashboards.

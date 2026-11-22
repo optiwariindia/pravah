@@ -2,9 +2,11 @@ package api
 
 import (
 	"bytes"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/sampledge-sse/pravah-go/internal/auth"
 	"github.com/sampledge-sse/pravah-go/internal/core"
 )
@@ -89,5 +91,19 @@ func TestAuthorizedStreamsReturnsApprovedIntersection(t *testing.T) {
 	ok, streams := authorizedStreams(claims, map[string]struct{}{"project:123": {}})
 	if !ok || len(streams) != 1 {
 		t.Fatalf("expected approved stream, got ok=%v streams=%v", ok, streams)
+	}
+}
+
+func TestDecodeStrictJSONRejectsOversizedPayload(t *testing.T) {
+	t.Setenv("MAX_REQUEST_BODY_BYTES", "1024")
+	recorder := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(recorder)
+	context.Request = httptest.NewRequest("POST", "/pravah/publish", strings.NewReader(`{"value":"`+strings.Repeat("x", 2048)+`"}`))
+
+	var target struct {
+		Value string `json:"value"`
+	}
+	if err := decodeStrictJSON(context, &target); err == nil {
+		t.Fatal("expected oversized payload to be rejected")
 	}
 }

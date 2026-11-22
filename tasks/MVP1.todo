@@ -2,9 +2,9 @@ Pravah MVP1 Tasks:
     Confirm MVP1 scope [Project Manager]:
         ✔ Confirm Go is the primary backend and mark the Node implementation as legacy or remove it from the supported runtime.
         ✔ Approve the signal-only payload contract: event name, resource ID, stream ID, timestamp, and event ID.
-        ☐ Define supported deployment targets, MongoDB version, and the production HTTPS strategy.
+        ✔ Define Docker Compose deployment, MongoDB 9, internal networking, and production reverse-proxy HTTPS strategy.
         ✔ Define MVP limits for 100 concurrent connections, 50 publications/second, configurable retention and payload limits, and sub-second delivery.
-        ☐ Document deferred Phase 2 features such as hosted infrastructure, horizontal scaling, and enterprise analytics.
+        ✔ Document deferred Phase 2 features such as hosted infrastructure, horizontal scaling, and enterprise analytics.
     Establish application security [Backend]:
         ✔ Restrict application registration so a public caller cannot create unlimited API keys.
         ✔ Validate stream names, event names, identifiers, request bodies, and configured operational limits.
@@ -31,7 +31,7 @@ Pravah MVP1 Tasks:
         ✔ Close clients whose buffers are full instead of silently dropping events.
         ✔ Add structured logs for connection open/close, authentication failures, publish failures, replay, and dropped delivery.
         ✔ Add metrics for active connections, publications, publication latency, replay count, and delivery failures.
-        ☐ Verify concurrent publish and client removal are safe under load.
+        ✔ Verify concurrent publish and client removal are safe under load.
     Complete the browser SDK [SDK]:
         ✔ Remove the circular dependency between the core SDK and React hooks.
         ✔ Expose connection states for initializing, connected, reconnecting, disconnected, and closed.
@@ -53,7 +53,7 @@ Pravah MVP1 Tasks:
         ✔ Add SDK tests for leader election, cross-tab delivery, reconnect token refresh, and cleanup.
         ✔ Add tests proving the SDK keeps one active EventSource across multiple browser tabs.
         ✔ Add load tests for the agreed concurrent-connection and publication targets.
-        ☐ Add security tests for invalid API keys, unauthorized streams, oversized payloads, and CORS behavior.
+        ✔ Add security tests for invalid API keys, unauthorized streams, oversized payloads, and CORS behavior.
     Finalize deployment and operations [DevOps]:
         ✔ Add a Compose profile or command that starts only the supported MVP service and MongoDB.
         ✔ Pin MongoDB to the 9.0 release line, configure its data path, and keep host ports unpublished.
@@ -61,21 +61,21 @@ Pravah MVP1 Tasks:
         ☐ Add CI for Go formatting, vetting, tests, SDK tests, and SDK build.
         ☐ Publish versioned, non-root container images to GHCR or Docker Hub.
         ☐ Add release versioning and changelog conventions across the service and SDK.
-        ☐ Document backup, retention, secret rotation, upgrade, and rollback procedures.
+        ✔ Document backup, retention, secret rotation, upgrade, and rollback procedures.
     Improve developer experience [Developer Experience]:
         ✔ Publish a focused OpenAPI specification for registration, health, publishing, and subscription.
         ✔ Add a copy-paste quickstart that starts Pravah, registers an app, publishes a signal, and displays it.
         ☐ Add a local playground showing connection status, active streams, and incoming signals.
         ☐ Publish `pravah-sdk` to npm with verified package metadata and supported-runtime documentation.
         ☐ Provide React, vanilla JavaScript, curl, Go, and Node publishing examples.
-        ☐ Reconcile README, developer guide, PRD, SRS, and file-structure documentation around the Go architecture.
-        ☐ Add troubleshooting guidance for cookies, CORS, reverse proxies, buffering, and reconnects.
+        ✔ Reconcile README, developer guide, PRD, SRS, and file-structure documentation around the Go architecture.
+        ✔ Add troubleshooting guidance for cookies, CORS, reverse proxies, buffering, and reconnects.
     Validate market claims [Product]:
         ✔ Benchmark active connections, publication throughput, drops, and publication latency in a reproducible environment.
         ✔ Measure one active SSE connection across multiple tabs in automated SDK tests and document the reproduction.
         ✔ Measure image size for the production container.
-        ☐ Define exactly what the signal-only security guarantee does and does not protect.
-        ☐ Replace unsupported superlatives with benchmark-backed positioning.
+        ✔ Define exactly what the signal-only security guarantee does and does not protect.
+        ✔ Replace unsupported superlatives with benchmark-backed positioning.
         ☐ Test the landing-page message with at least five target developers or teams.
     Prepare MVP1 launch [Marketing]:
         ☐ Publish a demo showing multiple tabs sharing one connection and receiving a resource-invalidating signal.

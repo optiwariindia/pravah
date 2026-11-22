@@ -1,5 +1,8 @@
 # File Structure
 
+> The supported implementation is `pravah-go/`. The diagram below describes
+> the original Node prototype and remains as historical context.
+
 ```
 event-service/
 │

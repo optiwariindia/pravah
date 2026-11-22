@@ -72,6 +72,9 @@ The service acts as a **standalone microservice** responsible for:
 
 # 3. ⚙️ Functional Requirements
 
+> MVP1 implementation is tenant-scoped. Publishing requires `X-API-KEY`, and
+> subscriptions require a signed token authorizing the exact requested streams.
+
 ---
 
 ## 3.1 Event Publishing
@@ -192,8 +195,8 @@ Clients shall receive missed events after reconnect.
 
 ### Requirements
 
-* all endpoints must require authentication
-* SSE authentication via cookies
+* publish, configuration, and management endpoints must require their respective API keys
+* SSE authentication combines a browser identity cookie with a signed stream token
 * system shall validate:
 
   * user identity
@@ -225,6 +228,7 @@ GET /pravah/health
 ```json
 {
   "_id": "ObjectId",
+  "appId": "tenant-id",
   "streamId": "project:123",
   "event": "respondent-added",
   "data": {},
@@ -338,8 +342,8 @@ GET /pravah/health
 
 # 8. 🧱 Technology Stack
 
-* Node.js (runtime)
-* Express (framework)
+* Go 1.25 (runtime)
+* Gin (framework)
 * MongoDB (event storage with TTL)
 
 ---
@@ -347,7 +351,7 @@ GET /pravah/health
 # 9. 🎯 Assumptions
 
 * system will run as a single instance
-* concurrent users < 100
+* MVP target: 100 concurrent connections and 50 publications per second
 * events are lightweight JSON payloads
 
 ---

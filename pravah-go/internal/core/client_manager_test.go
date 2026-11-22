@@ -1,6 +1,8 @@
 package core
 
 import (
+	"fmt"
+	"sync"
 	"testing"
 )
 
@@ -57,5 +59,36 @@ func TestCloseAllClosesEveryClient(t *testing.T) {
 		default:
 			t.Fatalf("client %s was not closed", client.ID)
 		}
+	}
+}
+
+func TestConcurrentPublishLookupAndRemoval(t *testing.T) {
+	manager := &ClientManager{clients: make(map[string]*Client)}
+	const iterations = 500
+	for index := 0; index < iterations; index++ {
+		id := fmt.Sprintf("connection-%d", index)
+		manager.AddClient(id, "app-1", "browser", map[string]struct{}{"stream": {}})
+	}
+	var workers sync.WaitGroup
+
+	workers.Add(2)
+	go func() {
+		defer workers.Done()
+		for index := 0; index < iterations; index++ {
+			for _, client := range manager.GetClientsByStream("app-1", "stream") {
+				client.Enqueue(Signal{ID: "event"})
+			}
+		}
+	}()
+	go func() {
+		defer workers.Done()
+		for index := 0; index < iterations; index++ {
+			manager.RemoveClient(fmt.Sprintf("connection-%d", index))
+		}
+	}()
+
+	workers.Wait()
+	if count := manager.GetConnectionCount(); count != 0 {
+		t.Fatalf("expected all clients removed, got %d", count)
 	}
 }

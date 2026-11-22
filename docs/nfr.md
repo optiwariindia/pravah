@@ -21,9 +21,9 @@
 *   **Data Retention:** Events must be stored in MongoDB with a **TTL (e.g., 24 hours)** to prevent database bloat.
 
 ## 4. 🛠️ Maintainability
-*   **Modularity:** The code should follow the modular structure defined in `file-structure.md` (controllers, services, routes).
-*   **Logging:** Detailed logging of event flow, connection errors, and authentication failures using a standard logger (e.g., Winston/Pino).
-*   **Code Quality:** Adherence to ESLint rules and a minimum of 80% test coverage for core logic (ClientManager, EventBus).
+*   **Modularity:** API handlers, connection management, middleware, persistence, models, and utilities remain separated in the Go implementation.
+*   **Logging:** Structured JSON logs cover event flow, connection errors, persistence failures, and authentication failures through Go `log/slog`.
+*   **Code Quality:** Go formatting/tests and SDK unit/export/package checks must pass for release candidates.
 
 ## 5. 📈 Scalability
 *   **Horizontal Scaling:** While the MVP is single-instance, the architecture must be designed to support **Redis Pub/Sub** for horizontal scaling in Phase 2.

@@ -60,14 +60,7 @@ func main() {
 	// Middleware
 	corsOrigins := utils.CORSAllowedOrigins()
 	if len(corsOrigins) > 0 {
-		r.Use(cors.New(cors.Config{
-			AllowOrigins:     corsOrigins,
-			AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-			AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-API-KEY", "X-ADMIN-KEY"},
-			ExposeHeaders:    []string{"Content-Length"},
-			AllowCredentials: true,
-			MaxAge:           12 * time.Hour,
-		}))
+		r.Use(cors.New(corsConfig(corsOrigins)))
 	}
 
 	// Static files
@@ -138,6 +131,17 @@ func main() {
 				log.Printf("MongoDB disconnect failed: %v", err)
 			}
 		}
+	}
+}
+
+func corsConfig(origins []string) cors.Config {
+	return cors.Config{
+		AllowOrigins:     origins,
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-API-KEY", "X-ADMIN-KEY"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
 	}
 }
 

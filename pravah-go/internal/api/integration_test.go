@@ -64,6 +64,13 @@ func TestMongoIntegration(t *testing.T) {
 	tokenTwo := issueIntegrationToken(t, router, appTwo.apiKey, []string{"project:integration"})
 	_ = tokenTwo
 
+	invalidPublish := integrationRequest(t, router, http.MethodPost, "/pravah/publish", "invalid-api-key", nil,
+		strings.NewReader(`{"streamId":"project:integration","event":"invalid","data":{"id":"1"}}`),
+	)
+	if invalidPublish.Code != http.StatusForbidden {
+		t.Fatalf("expected invalid API key rejection, got %d: %s", invalidPublish.Code, invalidPublish.Body.String())
+	}
+
 	handshake := integrationRequest(t, router, http.MethodGet, "/pravah/init", "", nil)
 	cookie := handshake.Result().Cookies()[0]
 

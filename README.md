@@ -2,7 +2,7 @@
 
 **Pravah** (meaning *Flow* or *Stream*) is a high-performance, secure, and project-agnostic real-time event notification microservice based on Server-Sent Events (SSE).
 
-Now powered by a **High-Performance Go Engine**, Pravah is designed for extreme efficiency, minimal resource footprint, and massive scalability.
+Now powered by a **Go engine**, Pravah provides a minimal, self-hosted SSE runtime for reliable signal delivery.
 
 ## 🚀 The Problem
 Modern web applications face major challenges when implementing real-time features:
@@ -14,7 +14,7 @@ Modern web applications face major challenges when implementing real-time featur
 Pravah solves these issues through a specialized architecture:
 -   **Multi-Tab Synchronization:** A smart SDK that uses Leader Election to maintain only **ONE** active SSE connection per browser.
 -   **Signal-Only Policy:** Pravah broadcasts minimalist "Signals" (Event Name + Resource ID). Sensitive data is fetched via your existing secure REST APIs.
--   **Go Engine (v1.0.0):** A compiled, scratch-based backend that handles thousands of concurrent streams with minimal CPU and memory.
+-   **Go Engine (v1.0.0):** A compiled, scratch-based backend validated with 100 concurrent clients at 50 publications per second.
 -   **Reliable Replay:** Tenant-configurable retention replays missed SSE events through `Last-Event-ID`.
 
 ## ✨ Key Features
@@ -81,6 +81,10 @@ bash scripts/quickstart.sh
 
 The OpenAPI contract is served at `/openapi.yaml` and stored at
 [pravah-go/openapi.yaml](pravah-go/openapi.yaml).
+
+Production operations are covered by [Operations](docs/operations.md),
+[Troubleshooting](docs/troubleshooting.md), and
+[MVP1 Known Limitations](docs/known-limitations.md).
 
 The legacy Node implementation is disabled by default. It can be started
 explicitly with `docker compose --profile legacy up pravah-legacy`.

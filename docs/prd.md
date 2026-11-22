@@ -5,6 +5,9 @@
 ### 1. 🎯 Overview
 **Pravah** is a standalone microservice designed to provide real-time event delivery to connected clients using Server-Sent Events (SSE). It bridges the gap between the main application backend and real-time dashboards/browsers, ensuring instant notification and historical event replay upon reconnection.
 
+> Implementation baseline: Go 1.25 and Gin are the supported backend. The
+> Node.js implementation remains only as a legacy prototype.
+
 ### 2. 👥 Target Audience
 *   **Internal Developers:** Building dashboards and real-time UI components.
 *   **System Integrators:** Connecting third-party services that require real-time updates.
@@ -28,10 +31,11 @@
 | **Client Registry** | Real-time tracking of active connections in-memory. |
 
 ### 5. 🏗️ High-Level Architecture
-*   **Backend:** Node.js + Express.
+*   **Backend:** Go 1.25 + Gin.
 *   **Database:** MongoDB (for event storage).
 *   **Protocol:** Server-Sent Events (SSE).
 *   **Communication:** Internal HTTP for publishing, SSE for streaming to clients.
+*   **Client:** JavaScript SDK with one browser-wide leader connection and React hooks.
 
 ### 6. 📈 Success Metrics
 *   **Latency:** >95% of events delivered in < 1 second.
