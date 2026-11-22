@@ -60,14 +60,14 @@ Pravah MVP1 Tasks:
         ✔ Add container health checks for the Go service and MongoDB dependency.
         ☐ Add CI for Go formatting, vetting, tests, SDK tests, and SDK build.
         ☐ Publish versioned, non-root container images to GHCR or Docker Hub.
-        ☐ Add release versioning and changelog conventions across the service and SDK.
+        ✔ Add release versioning and changelog conventions across the service and SDK.
         ✔ Document backup, retention, secret rotation, upgrade, and rollback procedures.
     Improve developer experience [Developer Experience]:
         ✔ Publish a focused OpenAPI specification for registration, health, publishing, and subscription.
         ✔ Add a copy-paste quickstart that starts Pravah, registers an app, publishes a signal, and displays it.
-        ☐ Add a local playground showing connection status, active streams, and incoming signals.
+        ✔ Add a local playground showing connection status, active streams, and incoming signals.
         ☐ Publish `pravah-sdk` to npm with verified package metadata and supported-runtime documentation.
-        ☐ Provide React, vanilla JavaScript, curl, Go, and Node publishing examples.
+        ✔ Provide React, vanilla JavaScript, curl, Go, and Node publishing examples.
         ✔ Reconcile README, developer guide, PRD, SRS, and file-structure documentation around the Go architecture.
         ✔ Add troubleshooting guidance for cookies, CORS, reverse proxies, buffering, and reconnects.
     Validate market claims [Product]:
@@ -82,5 +82,5 @@ Pravah MVP1 Tasks:
         ☐ Create comparison content for polling, WebSockets, hosted notification services, and self-hosted Pravah.
         ☐ Build launch pages around reliable dashboard updates, lower connection overhead, and deployment control.
         ☐ Record a short quickstart and load-test demonstration.
-        ☐ Add issue templates, contribution guidance, security reporting, and a public roadmap.
+        ✔ Add issue templates, contribution guidance, security reporting, and a public roadmap.
         ☐ Release MVP1 with a tagged container image, npm package, quickstart, benchmark notes, and known limitations.

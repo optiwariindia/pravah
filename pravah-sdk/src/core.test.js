@@ -93,13 +93,19 @@ describe('Pravah core lifecycle', () => {
         const first = new Pravah(options);
         const second = new Pravah(options);
         const listener = vi.fn();
+        const genericListener = vi.fn();
         second.on('bid-updated', listener);
+        second.on('signal', genericListener);
 
         await vi.advanceTimersByTimeAsync(900);
         const source = FakeEventSource.instances.find(candidate => !candidate.closed);
         source.dispatch('signal', { event: 'bid-updated', data: { id: 'bid-1' } }, 'event-1');
 
         expect(listener).toHaveBeenCalledWith({ id: 'bid-1' });
+        expect(genericListener).toHaveBeenCalledWith({
+            event: 'bid-updated',
+            data: { id: 'bid-1' }
+        });
         expect(second.lastEventId).toBe('event-1');
         first.close();
         second.close();

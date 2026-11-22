@@ -86,6 +86,9 @@ Production operations are covered by [Operations](docs/operations.md),
 [Troubleshooting](docs/troubleshooting.md), and
 [MVP1 Known Limitations](docs/known-limitations.md).
 
+See [Integration Examples](docs/examples.md), the [Public Roadmap](docs/roadmap.md),
+and the [Release Checklist](docs/release-checklist.md) before rollout.
+
 The legacy Node implementation is disabled by default. It can be started
 explicitly with `docker compose --profile legacy up pravah-legacy`.
 

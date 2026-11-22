@@ -106,6 +106,7 @@ class Pravah {
             const { type, payload = {} } = data || {};
             if (type === 'EVENT_SIGNAL') {
                 if (payload.id) this.lastEventId = payload.id;
+                this.emit('signal', { event: payload.event, data: payload.data });
                 this.emit(payload.event, payload.data);
             } else if (type === 'LEADER_PING' && this.isLeader && payload.target) {
                 this.postMessage('LEADER_ALIVE', { target: payload.target, id: this.lastEventId });
@@ -300,6 +301,7 @@ class Pravah {
     broadcastEvent(event, data, lastEventId) {
         if (lastEventId) this.lastEventId = lastEventId;
         this.postMessage('EVENT_SIGNAL', { event, data, id: lastEventId || null });
+        this.emit('signal', { event, data });
         this.emit(event, data);
     }
 
