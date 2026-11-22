@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"time"
 
@@ -26,6 +27,7 @@ func GetAppConfigHandler(c *gin.Context) {
 
 	config, err := getAppConfig(c.Request.Context(), app.AppID)
 	if err != nil {
+		log.Printf("[Pravah] Failed to load application config %s: %v", app.AppID, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Unable to load tenant configuration."})
 		return
 	}
@@ -57,6 +59,7 @@ func UpdateAppConfigHandler(c *gin.Context) {
 		options.Replace().SetUpsert(true),
 	)
 	if err != nil {
+		log.Printf("[Pravah] Failed to update application config %s: %v", app.AppID, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Unable to update tenant configuration."})
 		return
 	}

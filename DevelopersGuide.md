@@ -23,6 +23,13 @@ Connection and request limits are configurable:
 | `MAX_REPLAY_EVENTS` | 1000 | 1-100000 |
 | `MAX_REQUEST_BODY_BYTES` | 16384 | 1024-1048576 |
 | `DATABASE_OPERATION_TIMEOUT_SECONDS` | 3 | 1-30 |
+| `COOKIE_SECURE` | true | boolean; use false only for local HTTP |
+| `COOKIE_SAMESITE` | lax | strict, lax, none |
+| `COOKIE_DOMAIN` | empty | optional domain |
+| `COOKIE_MAX_AGE_SECONDS` | 31536000 | 3600-315360000 |
+
+For production, use HTTPS with `COOKIE_SECURE=true`. `COOKIE_SAMESITE=none`
+requires secure cookies.
 
 If a client buffer fills, Pravah closes that connection instead of silently
 dropping signals. A reconnecting client can replay retained events by event ID.

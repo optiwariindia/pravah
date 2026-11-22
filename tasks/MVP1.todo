@@ -9,13 +9,13 @@ Pravah MVP1 Tasks:
         ✔ Restrict application registration so a public caller cannot create unlimited API keys.
         ✔ Validate stream names, event names, identifiers, request bodies, and configured operational limits.
         ✔ Prevent the publish API from accepting or retaining arbitrary metadata in the signal-only path.
-        ☐ Add secure production cookie settings controlled through environment configuration.
+        ✔ Add secure production cookie settings controlled through environment configuration.
         ✔ Configure CORS from an environment allowlist instead of allowing every origin with credentials.
         ✔ Add request-scoped database contexts and protect tenant configuration with a signing secret.
         ✔ Define and implement signed, short-lived per-stream subscription authorization for supported stream types.
         ✔ Isolate persisted events, live clients, and replay by tenant application ID.
         ✔ Redact subscription tokens from request logs.
-        ☐ Avoid returning database errors or other internal implementation details in API responses.
+        ✔ Avoid returning database errors or other internal implementation details in API responses.
     Implement reliable event delivery [Backend]:
         ✔ Add expiration time to persisted events and create a MongoDB TTL index for configurable retention.
         ✔ Emit standards-compliant SSE `id:`, `event:`, and `data:` fields.

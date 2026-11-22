@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/sampledge-sse/pravah-go/internal/utils"
 )
 
 func HandshakeHandler(c *gin.Context) {
@@ -15,11 +16,23 @@ func HandshakeHandler(c *gin.Context) {
 		pravahID = uuid.New().String()
 		isNew = true
 
-		// Set cookie
-		c.SetCookie("pravah_id", pravahID, 365*24*60*60, "/", "", false, true)
-		// Parameters: name, value, maxAge, path, domain, secure, httpOnly
-		// Note: secure should be true in production, but we'll set it false for now
-		// or use environment variable.
+		switch utils.CookieSameSite() {
+		case "strict":
+			c.SetSameSite(http.SameSiteStrictMode)
+		case "none":
+			c.SetSameSite(http.SameSiteNoneMode)
+		default:
+			c.SetSameSite(http.SameSiteLaxMode)
+		}
+		c.SetCookie(
+			"pravah_id",
+			pravahID,
+			utils.CookieMaxAgeSeconds(),
+			"/",
+			utils.CookieDomain(),
+			utils.CookieSecure(),
+			true,
+		)
 	}
 
 	c.JSON(http.StatusOK, gin.H{

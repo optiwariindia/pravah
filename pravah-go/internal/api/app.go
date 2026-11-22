@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -44,7 +45,11 @@ func RegisterAppHandler(c *gin.Context) {
 
 	_, err := db.Database.Collection("apps").InsertOne(c.Request.Context(), app)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": err.Error()})
+		log.Printf("[Pravah] Failed to register application: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Internal Server Error",
+			"message": "Unable to register the application.",
+		})
 		return
 	}
 

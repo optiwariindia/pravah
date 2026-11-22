@@ -98,3 +98,39 @@ func TestEnvironmentValidationRejectsInvalidOperationalLimit(t *testing.T) {
 		t.Fatal("expected invalid CLIENT_SIGNAL_BUFFER to fail startup validation")
 	}
 }
+
+func TestCookieConfiguration(t *testing.T) {
+	t.Setenv("COOKIE_SECURE", "true")
+	t.Setenv("COOKIE_SAMESITE", "strict")
+	t.Setenv("COOKIE_DOMAIN", "events.example.com")
+	t.Setenv("COOKIE_MAX_AGE_SECONDS", "7200")
+
+	if !CookieSecure() {
+		t.Fatal("expected secure cookies")
+	}
+	if CookieSameSite() != "strict" {
+		t.Fatalf("unexpected SameSite value: %q", CookieSameSite())
+	}
+	if CookieDomain() != "events.example.com" {
+		t.Fatalf("unexpected cookie domain: %q", CookieDomain())
+	}
+	if CookieMaxAgeSeconds() != 7200 {
+		t.Fatalf("unexpected cookie max age: %d", CookieMaxAgeSeconds())
+	}
+}
+
+func TestCookieConfigurationDefaults(t *testing.T) {
+	t.Setenv("COOKIE_SECURE", "invalid")
+	t.Setenv("COOKIE_SAMESITE", "invalid")
+	t.Setenv("COOKIE_MAX_AGE_SECONDS", "1")
+
+	if !CookieSecure() {
+		t.Fatal("expected secure cookies by default")
+	}
+	if CookieSameSite() != "lax" {
+		t.Fatalf("unexpected SameSite fallback: %q", CookieSameSite())
+	}
+	if CookieMaxAgeSeconds() != 365*24*60*60 {
+		t.Fatalf("unexpected max-age fallback: %d", CookieMaxAgeSeconds())
+	}
+}

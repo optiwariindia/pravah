@@ -41,6 +41,7 @@ func CheckEnvironmentVariables() error {
 			{"MAX_REPLAY_EVENTS", 1, 100000},
 			{"MAX_REQUEST_BODY_BYTES", 1024, 1048576},
 			{"DATABASE_OPERATION_TIMEOUT_SECONDS", 1, 30},
+			{"COOKIE_MAX_AGE_SECONDS", 3600, 10 * 365 * 24 * 60 * 60},
 		} {
 			raw := os.Getenv(setting.name)
 			if raw == "" {
@@ -50,6 +51,14 @@ func CheckEnvironmentVariables() error {
 			if err != nil || value < setting.min || value > setting.max {
 				return errors.New(setting.name + " is outside its supported range")
 			}
+		}
+		if raw := strings.TrimSpace(os.Getenv("COOKIE_SECURE")); raw != "" {
+			if _, err := strconv.ParseBool(raw); err != nil {
+				return errors.New("COOKIE_SECURE must be a boolean")
+			}
+		}
+		if CookieSameSite() == "none" && !CookieSecure() {
+			return errors.New("COOKIE_SAMESITE=none requires COOKIE_SECURE=true")
 		}
 		return nil
 	}
@@ -114,6 +123,40 @@ func MaxRequestBodyBytes() int64 {
 
 func DatabaseOperationTimeout() time.Duration {
 	return time.Duration(positiveIntEnv("DATABASE_OPERATION_TIMEOUT_SECONDS", 3, 1, 30)) * time.Second
+}
+
+func CookieSecure() bool {
+	return boolEnv("COOKIE_SECURE", true)
+}
+
+func CookieSameSite() string {
+	value := strings.ToLower(strings.TrimSpace(os.Getenv("COOKIE_SAMESITE")))
+	switch value {
+	case "strict", "lax", "none":
+		return value
+	default:
+		return "lax"
+	}
+}
+
+func CookieDomain() string {
+	return strings.TrimSpace(os.Getenv("COOKIE_DOMAIN"))
+}
+
+func CookieMaxAgeSeconds() int {
+	return positiveIntEnv("COOKIE_MAX_AGE_SECONDS", 365*24*60*60, 3600, 10*365*24*60*60)
+}
+
+func boolEnv(name string, defaultValue bool) bool {
+	raw := strings.TrimSpace(os.Getenv(name))
+	if raw == "" {
+		return defaultValue
+	}
+	value, err := strconv.ParseBool(raw)
+	if err != nil {
+		return defaultValue
+	}
+	return value
 }
 
 func positiveIntEnv(name string, defaultValue, min, max int) int {
