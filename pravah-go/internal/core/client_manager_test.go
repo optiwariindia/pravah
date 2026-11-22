@@ -40,3 +40,22 @@ func TestClientEnqueueRejectsClosedClient(t *testing.T) {
 		t.Fatal("closed client unexpectedly queued a signal")
 	}
 }
+
+func TestCloseAllClosesEveryClient(t *testing.T) {
+	manager := &ClientManager{clients: make(map[string]*Client)}
+	first := manager.AddClient("connection-1", "app-1", "browser-1", nil)
+	second := manager.AddClient("connection-2", "app-1", "browser-2", nil)
+
+	manager.CloseAll("server_shutdown")
+
+	for _, client := range []*Client{first, second} {
+		select {
+		case <-client.Done:
+			if client.CloseReason() != "server_shutdown" {
+				t.Fatalf("unexpected close reason: %q", client.CloseReason())
+			}
+		default:
+			t.Fatalf("client %s was not closed", client.ID)
+		}
+	}
+}

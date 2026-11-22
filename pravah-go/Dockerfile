@@ -42,5 +42,8 @@ USER pravah
 
 EXPOSE 3000
 
+HEALTHCHECK --interval=10s --timeout=4s --start-period=15s --retries=5 \
+  CMD ["./server", "-healthcheck"]
+
 # Start the application
 ENTRYPOINT ["./server"]

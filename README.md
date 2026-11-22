@@ -66,6 +66,13 @@ export ADMIN_API_KEY="$(openssl rand -hex 32)"
 docker compose up --build pravah-go db
 ```
 
+MongoDB is pinned to `9.0`. Override `MONGODB_DATA_PATH` to use a different
+persistent data directory:
+
+```bash
+MONGODB_DATA_PATH=/srv/pravah/mongodb docker compose up -d db pravah-go
+```
+
 The legacy Node implementation is disabled by default. It can be started
 explicitly with `docker compose --profile legacy up pravah-legacy`.
 

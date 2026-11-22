@@ -35,10 +35,17 @@ services:
       - SUBSCRIPTION_JWT_SECRET=${SUBSCRIPTION_JWT_SECRET:?Set a 32+ character subscription signing secret}
       - ADMIN_API_KEY=${ADMIN_API_KEY:?Set a 32+ character admin API key}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   db:
-    image: mongo:latest
+    image: mongo:9.0
     restart: unless-stopped
     volumes:
-      - ./db:/data/db
+      - ${MONGODB_DATA_PATH:-./db}:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "quit(db.adminCommand({ ping: 1 }).ok ? 0 : 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s

@@ -102,6 +102,19 @@ func (cm *ClientManager) RemoveClient(connectionID string) {
 	delete(cm.clients, connectionID)
 }
 
+func (cm *ClientManager) CloseAll(reason string) {
+	cm.mu.RLock()
+	clients := make([]*Client, 0, len(cm.clients))
+	for _, client := range cm.clients {
+		clients = append(clients, client)
+	}
+	cm.mu.RUnlock()
+
+	for _, client := range clients {
+		client.Close(reason)
+	}
+}
+
 func (cm *ClientManager) GetClientsByStream(appID, streamID string) []*Client {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()

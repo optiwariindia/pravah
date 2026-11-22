@@ -1,21 +1,33 @@
 package main
 
 import (
+	"context"
+	"errors"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/sampledge-sse/pravah-go/internal/api"
+	"github.com/sampledge-sse/pravah-go/internal/core"
 	"github.com/sampledge-sse/pravah-go/internal/db"
 	"github.com/sampledge-sse/pravah-go/internal/middleware"
 	"github.com/sampledge-sse/pravah-go/internal/utils"
 )
 
 func main() {
+	healthcheck := flag.Bool("healthcheck", false, "check the local Pravah health endpoint")
+	flag.Parse()
+	if *healthcheck {
+		os.Exit(runHealthcheck())
+	}
+
 	// Validate environment variables
 	if err := utils.CheckEnvironmentVariables(); err != nil {
 		log.Fatal(err)
@@ -87,7 +99,55 @@ func main() {
 	}
 
 	log.Printf("Server started on port %s", port)
-	if err := r.Run(":" + port); err != nil {
-		log.Fatalf("Failed to run server: %v", err)
+	server := &http.Server{
+		Addr:              ":" + port,
+		Handler:           r,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
+
+	shutdownContext, stopSignals := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stopSignals()
+
+	serverErrors := make(chan error, 1)
+	go func() {
+		serverErrors <- server.ListenAndServe()
+	}()
+
+	select {
+	case err := <-serverErrors:
+		if !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("Failed to run server: %v", err)
+		}
+	case <-shutdownContext.Done():
+		log.Println("Shutdown requested; closing SSE clients")
+		core.GetClientManager().CloseAll("server_shutdown")
+
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := server.Shutdown(ctx); err != nil {
+			log.Printf("HTTP shutdown did not complete gracefully: %v", err)
+		}
+		if db.Client != nil {
+			disconnectContext, disconnectCancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer disconnectCancel()
+			if err := db.Client.Disconnect(disconnectContext); err != nil {
+				log.Printf("MongoDB disconnect failed: %v", err)
+			}
+		}
+	}
+}
+
+func runHealthcheck() int {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
+	client := &http.Client{Timeout: 3 * time.Second}
+	response, err := client.Get("http://127.0.0.1:" + port + "/pravah/health")
+	if err != nil {
+		log.Printf("Healthcheck request failed: %v", err)
+		return 1
+	}
+	defer response.Body.Close()
+	return map[bool]int{true: 0, false: 1}[response.StatusCode == http.StatusOK]
 }

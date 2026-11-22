@@ -56,8 +56,8 @@ Pravah MVP1 Tasks:
         ☐ Add security tests for invalid API keys, unauthorized streams, oversized payloads, and CORS behavior.
     Finalize deployment and operations [DevOps]:
         ✔ Add a Compose profile or command that starts only the supported MVP service and MongoDB.
-        ☐ Make MongoDB persistence and container ports explicit and configurable.
-        ☐ Add container health checks for the Go service and MongoDB dependency.
+        ✔ Pin MongoDB to the 9.0 release line, configure its data path, and keep host ports unpublished.
+        ✔ Add container health checks for the Go service and MongoDB dependency.
         ☐ Add CI for Go formatting, vetting, tests, SDK tests, and SDK build.
         ☐ Publish versioned, non-root container images to GHCR or Docker Hub.
         ☐ Add release versioning and changelog conventions across the service and SDK.
