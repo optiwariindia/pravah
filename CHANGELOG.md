@@ -25,7 +25,7 @@ versioned independently; this changelog groups related release work.
 - Sanitized internal API errors and token-redacted access logs.
 - Bounded request, replay, stream, and client-buffer sizes.
 
-## SDK 1.1.1 - 2026-11-22
+## SDK 1.1.4 - 2026-11-22
 
 - Added verified CommonJS, ESM, UMD, and CDN exports.
 - Added TypeScript declarations and publishable package checks.
@@ -44,3 +44,6 @@ versioned independently; this changelog groups related release work.
 
 - Core JavaScript SDK and React hooks.
 - Multi-tab leader election using `BroadcastChannel`.
+
+SDK versions `1.1.1` through `1.1.3` were published from the npm registry before
+the repository release metadata was consolidated.
