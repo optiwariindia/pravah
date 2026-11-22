@@ -41,12 +41,12 @@ Pravah MVP1 Tasks:
         ✔ Add explicit `close()` cleanup for timers, page listeners, BroadcastChannel, and EventSource.
         ✔ Stop attempting reconnects after the SDK has been intentionally closed.
         ✔ Add clear handling for missing browser APIs and initialization failures.
-        ☐ Add named and default package exports that work in ESM, CommonJS, UMD, and browser CDN usage.
+        ✔ Add named and default package exports that work in ESM, CommonJS, UMD, and browser CDN usage.
     Complete React integration [Frontend]:
         ✔ Return stable React state from `usePravah` so consumers rerender when the SDK or connection state changes.
-        ☐ Prevent stale event callbacks and unnecessary SDK recreation on equivalent options.
-        ☐ Cover `usePravahState`, listener cleanup, reconnects, and unmount behavior with tests.
-        ☐ Align the React examples with the implemented public API and returned values.
+        ✔ Prevent stale event callbacks and unnecessary SDK recreation on equivalent options.
+        ✔ Cover `usePravahState`, listener cleanup, reconnects, and unmount behavior with tests.
+        ✔ Align the React examples with the implemented public API and returned values.
     Add automated coverage [QA]:
         ✔ Add Go unit tests for token validation, authorization, retention, identifier validation, and SSE serialization.
         ✔ Add Go integration tests for handshake, registration, publish, subscribe, replay, tenant isolation, cleanup, and health endpoints.

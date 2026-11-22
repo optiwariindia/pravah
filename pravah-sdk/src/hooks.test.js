@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook } from '@testing-library/react';
-import { usePravah, usePravahListener } from './index';
+import { act, renderHook } from '@testing-library/react';
+import { usePravah, usePravahListener, usePravahState } from './index';
 
 // Mock the core class inside the same package
 const mockOn = vi.fn();
@@ -41,10 +41,21 @@ describe('pravah-react hooks', () => {
             usePravahListener(mockPravah, 'test-event', callback)
         );
 
-        expect(mockOn).toHaveBeenCalledWith('test-event', callback);
+        const listener = mockOn.mock.calls[0][1];
+        expect(listener).not.toBe(callback);
         
         unmount();
         
-        expect(mockOff).toHaveBeenCalledWith('test-event', callback);
+        expect(mockOff).toHaveBeenCalledWith('test-event', listener);
+    });
+
+    it('usePravahState should update from events', () => {
+        const mockPravah = { on: mockOn, off: mockOff };
+        const { result } = renderHook(() => usePravahState(mockPravah, 'test-event'));
+        const listener = mockOn.mock.calls.find(([event]) => event === 'test-event')[1];
+
+        act(() => listener({ id: 'resource-1' }));
+
+        expect(result.current).toEqual({ id: 'resource-1' });
     });
 });

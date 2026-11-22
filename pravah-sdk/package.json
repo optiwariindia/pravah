@@ -4,15 +4,30 @@
   "description": "Core SDK and React Hooks for Pravah SSE Real-time Event Streaming",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
+  "unpkg": "dist/index.umd.js",
   "source": "src/index.js",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
+    },
+    "./browser": "./dist/index.umd.js"
+  },
   "files": [
     "dist",
-    "src"
+    "src/core.js",
+    "src/hooks.js",
+    "src/index.js",
+    "src/index.d.ts"
   ],
   "scripts": {
     "build": "microbundle --jsx React.createElement --jsxFragment React.Fragment",
     "dev": "microbundle watch --jsx React.createElement",
-    "test": "vitest"
+    "test": "vitest",
+    "test:exports": "node scripts/check-exports.mjs",
+    "prepack": "npm run build && npm run test:exports"
   },
   "keywords": [
     "pravah",
@@ -24,6 +39,7 @@
   ],
   "author": "Om Prakash Tiwari <optiwari.india@gmail.com>",
   "license": "ISC",
+  "sideEffects": false,
   "peerDependencies": {
     "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
   },

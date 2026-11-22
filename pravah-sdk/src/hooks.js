@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Pravah from './core';
 
 /**
@@ -45,15 +45,19 @@ export const usePravah = (options) => {
  * @param {Function} callback - Callback function
  */
 export const usePravahListener = (pravah, event, callback) => {
+    const callbackRef = useRef(callback);
+    callbackRef.current = callback;
+
     useEffect(() => {
         if (!pravah || !event || !callback) return;
 
-        pravah.on(event, callback);
+        const listener = (payload) => callbackRef.current?.(payload);
+        pravah.on(event, listener);
         
         return () => {
-            pravah.off(event, callback);
+            pravah.off(event, listener);
         };
-    }, [pravah, event, callback]);
+    }, [pravah, event]);
 };
 
 /**
